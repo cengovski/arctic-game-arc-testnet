@@ -1,0 +1,10 @@
+{
+  "ArcticToken": "0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf",
+  "ArcticBeasts": "0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E",
+  "ArcticStaking": "0xf979AF495e2a04A264E97524932f67F65E20bA5f",
+  "ArcticMarket": "0xA9bfe3b282d7925c83Bb1a5871f64FdDD9A8A43c",
+  "chainId": 5042002,
+  "network": "arcTestnet",
+  "deployer": "0x5bD6dEfA181aF2b45cA6797b55Ea08fEa0B64681",
+  "deployedAt": "2026-05-12T20:24:31.217Z"
+}
