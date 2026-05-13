@@ -338,7 +338,7 @@ let myStakedTokens = [];
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => document.getElementById('loading').classList.add('hide'), 800);
   document.getElementById('btn-connect').addEventListener('click', connectWallet);
-  document.getElementById('btn-disconnect').addEventListener('click', disconnectWallet');
+  document.getElementById('btn-disconnect').addEventListener('click', disconnectWallet);
   if (window.ethereum) {
     window.ethereum.on('accountsChanged', () => location.reload());
     window.ethereum.on('chainChanged', () => location.reload());
