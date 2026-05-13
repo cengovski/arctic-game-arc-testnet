@@ -495,10 +495,7 @@ function renderNFTGrid(containerId, tokens, selectedSet, type) {
   if (!tokens.length) { el.innerHTML = '<p style="color:#444;font-size:12px">No NFTs</p>'; return; }
   el.innerHTML = tokens.map(id => {
     const sel = selectedSet.has(id);
-    return `<div class="nft-card ${sel ? 'sel' : ''}" onclick="toggleNFT('${type}',${id})">
-      <span class="ne">${RARITY_EMOJIS[1]}</span>
-      <span class="ni">#${id}</span>
-    </div>`;
+    return '<div class="nft-card ' + sel ? 'sel' : '" onclick="toggleNFT(\'' + type + '\',' + id + ')">\n      <span class="ne">' + RARITY_EMOJIS[1] + '</span>\n      <span class="ni">#' + id + '</span>\n    </div>';
   }).join('');
 }
 
@@ -526,11 +523,7 @@ async function refreshMarketTab() {
     if (!listings.length) {
       el.innerHTML = '<p style="color:#444;font-size:12px">No active listings</p>';
     } else {
-      el.innerHTML = listings.map(l => `<div class="row">
-        <span class="lbl">#${l.tokenId} by ${l.seller.slice(0,6)}...</span>
-        <span class="val val-a">${(Number(l.price) / 1e6).toFixed(2)} USDC</span>
-        <button class="btn btn-sm btn-green" onclick="doBuy(${l.id})">Buy</button>
-      </div>`).join('');
+      el.innerHTML = listings.map(l => '<div class="row">\n        <span class="lbl">#' + l.tokenId + ' by ' + l.seller.slice(0,6) + '...</span>\n        <span class="val val-a">' + (Number(l.price) / 1e6).toFixed(2) + ' USDC</span>\n        <button class="btn btn-sm btn-green" onclick="doBuy(' + l.id + ')">Buy</button>\n      </div>').join('');
     }
   } catch(e) { console.error('refreshMarket:', e); }
 }
@@ -544,8 +537,8 @@ async function refreshSwapTab() {
     const arcticBal = parseFloat(ethers.formatUnits(pool.arcticBalance, 18));
     const price = usdcBal > 0 ? arcticBal / usdcBal : 0;
     document.getElementById('swap-pool-info').innerHTML =
-      `Pool: <b>${usdcBal.toFixed(2)} USDC</b> + <b>${arcticBal.toFixed(0)} ARCTIC</b><br>` +
-      `Price: <b>1 USDC ≈ ${price.toFixed(2)} ARCTIC</b>`;
+      'Pool: <b>' + usdcBal.toFixed(2) + ' USDC</b> + <b>' + arcticBal.toFixed(0) + ' ARCTIC</b><br>' +
+      'Price: <b>1 USDC ≈ ' + price.toFixed(2) + ' ARCTIC</b>';
     updateSwapQuote();
   } catch(e) {
     document.getElementById('swap-pool-info').textContent = 'Pool not found or empty';
@@ -573,7 +566,7 @@ async function updateSwapQuote() {
       const minOut = amountOut * (1 - slippage / 100);
       document.getElementById('swap-amount-out').value = amountOut.toFixed(4);
       document.getElementById('swap-quote-info').innerHTML =
-        `1 USDC ≈ ${pricePer.toFixed(2)} ARCTIC<br>Min received: <b>${minOut.toFixed(4)}</b> (${slippage}% slippage)`;
+        '1 USDC ≈ ' + pricePer.toFixed(2) + ' ARCTIC<br>Min received: <b>' + minOut.toFixed(4) + '</b> (' + slippage + '% slippage)';
     } else {
       const arcticIn = ethers.parseUnits(amountIn.toFixed(18), 18);
       const quote = await contracts.dexRO.getArcticToUsdcQuote(arcticIn);
@@ -582,7 +575,7 @@ async function updateSwapQuote() {
       const minOut = amountOut * (1 - slippage / 100);
       document.getElementById('swap-amount-out').value = amountOut.toFixed(4);
       document.getElementById('swap-quote-info').innerHTML =
-        `1 ARCTIC ≈ ${pricePer.toFixed(4)} USDC<br>Min received: <b>${minOut.toFixed(4)}</b> (${slippage}% slippage)`;
+        '1 ARCTIC ≈ ' + pricePer.toFixed(4) + ' USDC<br>Min received: <b>' + minOut.toFixed(4) + '</b> (' + slippage + '% slippage)';
     }
   } catch(e) { console.error('quote:', e); }
 }
@@ -630,9 +623,9 @@ async function doSwap() {
       }
       tx = await contracts.dex.swapArcticToUsdc(arcticIn, minOut);
     }
-    showMsg('swap-msg', `⏳ Swapping ${amountIn} ${tokenIn.toUpperCase()}...`, 'warn');
+    showMsg('swap-msg', '⏳ Swapping ' + amountIn + ' ' + tokenIn.toUpperCase() + '...', 'warn');
     await tx.wait();
-    showMsg('swap-msg', `✅ Swapped! <a class="tx-link" href="${EXPLORER}/tx/${tx.hash}" target="_blank">View TX</a>`, 'ok');
+    showMsg('swap-msg', '✅ Swapped! <a class="tx-link" href="' + EXPLORER + '/tx/' + tx.hash + '" target="_blank">View TX</a>', 'ok');
     document.getElementById('swap-amount-in').value = '';
     document.getElementById('swap-amount-out').value = '';
     await refreshAll();
@@ -644,7 +637,7 @@ async function doSwap() {
 
 // ===== ACTIONS =====
 function showMsg(id, text, type) {
-  document.getElementById(id).innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+  document.getElementById(id).innerHTML = '<div class="msg msg-' + type + '">' + text + '</div>';
 }
 function clearMsg(id) { document.getElementById(id).innerHTML = ''; }
 
@@ -653,9 +646,9 @@ async function doMint() {
   clearMsg('mint-msg');
   try {
     const tx = await contracts.nft.mint(qty);
-    showMsg('mint-msg', `⏳ Minting ${qty}...`, 'warn');
+    showMsg('mint-msg', '⏳ Minting ' + qty + '...', 'warn');
     await tx.wait();
-    showMsg('mint-msg', `✅ Minted ${qty} NFTs! <a class="tx-link" href="${EXPLORER}/tx/${tx.hash}" target="_blank">View TX</a>`, 'ok');
+    showMsg('mint-msg', '✅ Minted ' + qty + ' NFTs! <a class="tx-link" href="' + EXPLORER + '/tx/' + tx.hash + '" target="_blank">View TX</a>', 'ok');
     await refreshAll();
   } catch(e) { showMsg('mint-msg', '❌ ' + (e.reason || e.message), 'err'); }
 }
@@ -675,7 +668,7 @@ async function doStake() {
   try {
     const ids = [...selectedStake];
     const tx = await contracts.staking.stake(ids);
-    showMsg('stake-msg', `⏳ Staking ${ids.length}...`, 'warn');
+    showMsg('stake-msg', '⏳ Staking ' + ids.length + '...', 'warn');
     await tx.wait();
     selectedStake.clear();
     showMsg('stake-msg', '✅ Staked!', 'ok');
@@ -688,7 +681,7 @@ async function doUnstake() {
   try {
     const ids = [...selectedUnstake];
     const tx = await contracts.staking.unstake(ids);
-    showMsg('stake-msg', `⏳ Unstaking ${ids.length}...`, 'warn');
+    showMsg('stake-msg', '⏳ Unstaking ' + ids.length + '...', 'warn');
     await tx.wait();
     selectedUnstake.clear();
     showMsg('stake-msg', '✅ Unstaked!', 'ok');
@@ -719,9 +712,9 @@ async function doList() {
     }
     const priceWei = ethers.parseUnits(price.toFixed(6), 6);
     const tx = await contracts.market.list(tokenId, priceWei);
-    showMsg('market-msg', `⏳ Listing #${tokenId}...`, 'warn');
+    showMsg('market-msg', '⏳ Listing #' + tokenId + '...', 'warn');
     await tx.wait();
-    showMsg('market-msg', `✅ Listed #${tokenId} for ${price} USDC!`, 'ok');
+    showMsg('market-msg', '✅ Listed #' + tokenId + ' for ' + price + ' USDC!', 'ok');
     await refreshMarketTab();
   } catch(e) { showMsg('market-msg', '❌ ' + (e.reason || e.message), 'err'); }
 }
