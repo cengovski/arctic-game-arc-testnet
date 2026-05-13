@@ -335,7 +335,7 @@ let myUnstakedTokens = [];
 let myStakedTokens = [];
 
 // ===== INIT =====
-window.addEventListener('DOMContentLoaded', () => {
+function init() {
   setTimeout(() => document.getElementById('loading').classList.add('hide'), 800);
   document.getElementById('btn-connect').addEventListener('click', connectWallet);
   document.getElementById('btn-disconnect').addEventListener('click', disconnectWallet);
@@ -343,7 +343,12 @@ window.addEventListener('DOMContentLoaded', () => {
     window.ethereum.on('accountsChanged', () => location.reload());
     window.ethereum.on('chainChanged', () => location.reload());
   }
-});
+}
+if (document.readyState === 'complete') {
+  init();
+} else {
+  window.addEventListener('DOMContentLoaded', init);
+}
 
 // ===== WALLET =====
 async function connectWallet() {
