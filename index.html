@@ -238,6 +238,29 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         </div>
       </div>
     </div>
+
+    <!-- LIQUIDITY SECTION -->
+    <div class="card">
+      <h3>🏊 Provide Liquidity</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Add liquidity to earn 0.3% swap fees. Remove anytime.</p>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="value" id="dex-total-lp">0</div><div class="label">Total LP</div></div>
+        <div class="stat-box"><div class="value" id="dex-lp-balance">0 LP</div><div class="label">Your LP</div></div>
+      </div>
+      <div class="swap-box">
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px">Add Liquidity</div>
+        <div class="swap-row">
+          <input type="number" id="liq-usdc-amount" placeholder="USDC amount" step="0.1" style="flex:1">
+          <input type="number" id="liq-arctic-amount" placeholder="ARCTIC amount" step="1" style="flex:1">
+          <button class="btn btn-success" onclick="addLiquidity()">+ Add</button>
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);margin:12px 0 8px">Remove Liquidity</div>
+        <div class="swap-row">
+          <input type="number" id="liq-lp-amount" placeholder="LP tokens" step="0.01" style="flex:1">
+          <button class="btn btn-warning" onclick="removeLiquidity()">- Remove</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- STATS PANEL -->
@@ -268,7 +291,7 @@ var CONTRACTS = {
   arcticBeasts: '0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E',
   arcticStaking: '0xf979AF495e2a04A264E97524932f67F65E20bA5f',
   arcticMarket: '0xA9bfe3b282d7925c83Bb1a5871f64FdDD9A8A43c',
-  arcticDEX: '0x6536BA62CF325F3ca98ab31Fd6029E13Bb83E837',
+  arcticDEX: '0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4',
   usdc: '0x3600000000000000000000000000000000000000'
 };
 
@@ -317,10 +340,20 @@ var ABI_MARKET = [
   'function listings(uint256) view returns (address,uint256,bool)'
 ];
 var ABI_DEX = [
-  'function swapUSDCToARCTIC(uint256,uint256)', 'function swapARCTICToUSDC(uint256,uint256)',
-  'function getUSDCReserve() view returns (uint256)', 'function getARCTICReserve() view returns (uint256)',
+  'function swapUSDCToARCTIC(uint256,uint256)',
+  'function swapARCTICToUSDC(uint256,uint256)',
   'function getOutputAmount(uint256,bool) view returns (uint256)',
-  'function usdc() view returns (address)', 'function arctic() view returns (address)'
+  'function getUSDCReserve() view returns (uint256)',
+  'function getARCTICReserve() view returns (uint256)',
+  'function getPoolInfo() view returns (uint256,uint256,uint256,uint256)',
+  'function addLiquidity(uint256,uint256) returns (uint256)',
+  'function removeLiquidity(uint256) returns (uint256,uint256)',
+  'function getLPAmount(uint256,uint256) view returns (uint256)',
+  'function getRemoveAmount(uint256) view returns (uint256,uint256)',
+  'function lpBalances(address) view returns (uint256)',
+  'function totalLPSupply() view returns (uint256)',
+  'function usdc() view returns (address)',
+  'function arctic() view returns (address)'
 ];
 
 // ===== INIT =====
@@ -371,7 +404,7 @@ function getEthereumProvider() {
 }
 
 async function switchToArcTestnet(provider) {
-  var chainIdHex = '0x' + CHAIN_ID.toString(16); // 0x4CC0F2
+  var chainIdHex = '0x' + CHAIN_ID.toString(16); // 0x4CEF52
   var chainName = 'ARC Testnet';
   var rpcUrl = RPC_URL;
   var explorerUrl = 'https://testnet.arcscan.app';
@@ -589,14 +622,22 @@ async function loadMarketData() {
 
 async function loadSwapData() {
   try {
-    var usdcRes = await contracts.arcticDEX.getUSDCReserve();
-    var arcticRes = await contracts.arcticDEX.getARCTICReserve();
-    document.getElementById('dex-usdc-pool').textContent = Number(ethers.formatEther(usdcRes)).toFixed(2);
-    document.getElementById('dex-arctic-pool').textContent = Number(ethers.formatEther(arcticRes)).toFixed(0);
-    if (usdcRes > 0n) {
-      var price = Number(ethers.formatEther(arcticRes)) / Number(ethers.formatEther(usdcRes));
-      document.getElementById('dex-price').textContent = price.toFixed(2);
+    var pool = await contracts.arcticDEX.getPoolInfo();
+    var usdcBal = Number(ethers.formatUnits(pool.usdcBal, 6));
+    var arcticBal = Number(ethers.formatUnits(pool.arcticBal, 18));
+    document.getElementById('dex-usdc-pool').textContent = usdcBal.toFixed(2);
+    document.getElementById('dex-arctic-pool').textContent = arcticBal.toFixed(0);
+    if (usdcBal > 0) {
+      var price = arcticBal / usdcBal;
+      document.getElementById('dex-price').textContent = price.toFixed(2) + ' ARCTIC';
     }
+    // User LP balance
+    if (walletAddress) {
+      var lpBal = await contracts.arcticDEX.lpBalances(walletAddress);
+      var lpNum = Number(ethers.formatEther(lpBal));
+      document.getElementById('dex-lp-balance').textContent = lpNum > 0 ? lpNum.toFixed(2) + ' LP' : '0 LP';
+    }
+    document.getElementById('dex-total-lp').textContent = Number(ethers.formatEther(pool.lpSupply)).toFixed(2);
   } catch(e) { log('Swap load: ' + e.message, 'err'); }
 }
 
@@ -832,6 +873,55 @@ async function executeSwap() {
     document.getElementById('swap-output').value = '';
     loadAllData();
   } catch(e) { log('Swap error: ' + e.message, 'err'); }
+}
+
+// ===== LIQUIDITY =====
+async function addLiquidity() {
+  var usdcAmt = parseFloat(document.getElementById('liq-usdc-amount').value);
+  var arcticAmt = parseFloat(document.getElementById('liq-arctic-amount').value);
+  if (!usdcAmt || !arcticAmt || usdcAmt <= 0 || arcticAmt <= 0) {
+    showToast('Enter valid amounts', 'error'); return;
+  }
+  log('Adding liquidity: ' + usdcAmt + ' USDC + ' + arcticAmt + ' ARCTIC...', 'info');
+  try {
+    var usdcWei = ethers.parseUnits(usdcAmt.toString(), 6);
+    var arcticWei = ethers.parseUnits(arcticAmt.toString(), 18);
+    // Approve
+    var usdcAllow = await contracts.usdc.allowance(walletAddress, CONTRACTS.arcticDEX);
+    if (usdcAllow < usdcWei) {
+      var tx1 = await contracts.usdc.approve(CONTRACTS.arcticDEX, ethers.MaxUint256);
+      await tx1.wait();
+    }
+    var arcticAllow = await contracts.arcticToken.allowance(walletAddress, CONTRACTS.arcticDEX);
+    if (arcticAllow < arcticWei) {
+      var tx2 = await contracts.arcticToken.approve(CONTRACTS.arcticDEX, ethers.MaxUint256);
+      await tx2.wait();
+    }
+    var tx = await contracts.arcticDEX.addLiquidity(usdcWei, arcticWei, { gasLimit: 500000 });
+    log('TX: ' + tx.hash.slice(0,10) + '...', 'info');
+    await tx.wait();
+    log('Liquidity added!', 'ok');
+    showToast('Liquidity added!', 'success');
+    document.getElementById('liq-usdc-amount').value = '';
+    document.getElementById('liq-arctic-amount').value = '';
+    loadAllData();
+  } catch(e) { log('Add liquidity error: ' + e.message, 'err'); }
+}
+
+async function removeLiquidity() {
+  var lpAmt = parseFloat(document.getElementById('liq-lp-amount').value);
+  if (!lpAmt || lpAmt <= 0) { showToast('Enter LP amount', 'error'); return; }
+  log('Removing ' + lpAmt + ' LP tokens...', 'info');
+  try {
+    var lpWei = ethers.parseEther(lpAmt.toString());
+    var tx = await contracts.arcticDEX.removeLiquidity(lpWei, { gasLimit: 500000 });
+    log('TX: ' + tx.hash.slice(0,10) + '...', 'info');
+    await tx.wait();
+    log('Liquidity removed!', 'ok');
+    showToast('Liquidity removed!', 'success');
+    document.getElementById('liq-lp-amount').value = '';
+    loadAllData();
+  } catch(e) { log('Remove liquidity error: ' + e.message, 'err'); }
 }
 
 // ===== UI HELPERS =====

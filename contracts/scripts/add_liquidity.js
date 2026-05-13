@@ -1,42 +1,68 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  const USDC = '0x3600000000000000000000000000000000000000';
-  const ARCTIC_TOKEN = '0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf';
-  const DEX = '0x6536BA62CF325F3ca98ab31Fd6029E13Bb83E837';
+  const [deployer] = await ethers.getSigners();
+  console.log("Account:", deployer.address);
 
-  const [signer] = await ethers.getSigners();
+  const USDC = "0x3600000000000000000000000000000000000000";
+  const ARCTIC = "0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf";
+  const DEX = "0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4";
 
-  const usdcC = await ethers.getContractAt('IERC20', USDC);
-  const arcticC = await ethers.getContractAt('IERC20', ARCTIC_TOKEN);
+  const usdcContract = await ethers.getContractAt("IERC20", USDC);
+  const arcticContract = await ethers.getContractAt("IERC20", ARCTIC);
+  const dex = await ethers.getContractAt("ArcticDEXV2", DEX);
 
-  const usdcBal = await usdcC.balanceOf(signer.address);
-  const arcticBal = await arcticC.balanceOf(signer.address);
-  console.log('USDC balance:', ethers.formatUnits(usdcBal, 6));
-  console.log('ARCTIC balance:', ethers.formatUnits(arcticBal, 18));
+  // Check balances
+  const usdcBal = await usdcContract.balanceOf(deployer.address);
+  const arcticBal = await arcticContract.balanceOf(deployer.address);
+  console.log("USDC balance:", ethers.formatUnits(usdcBal, 6));
+  console.log("ARCTIC balance:", ethers.formatUnits(arcticBal, 18));
 
-  // Add liquidity: 10 USDC + 1000 ARCTIC (1 USDC = 100 ARCTIC starting price)
-  const usdcAmount = ethers.parseUnits('10', 6);
-  const arcticAmount = ethers.parseUnits('1000', 18);
+  // Check allowances
+  const usdcAllow = await usdcContract.allowance(deployer.address, DEX);
+  const arcticAllow = await arcticContract.allowance(deployer.address, DEX);
+  console.log("USDC allowance:", ethers.formatUnits(usdcAllow, 6));
+  console.log("ARCTIC allowance:", ethers.formatUnits(arcticAllow, 18));
 
-  const tx1 = await usdcC.approve(DEX, usdcAmount);
-  await tx1.wait();
-  const tx2 = await arcticC.approve(DEX, arcticAmount);
-  await tx2.wait();
-  console.log('Approved');
+  // Try adding liquidity with smaller amounts first
+  const usdcAmount = ethers.parseUnits("5", 6); // 5 USDC
+  const arcticAmount = ethers.parseUnits("500", 18); // 500 ARCTIC
 
-  const dexC = await ethers.getContractAt('ArcticDEX', DEX);
-  const tx3 = await dexC.addLiquidity(usdcAmount, arcticAmount);
-  await tx3.wait();
-  console.log('Liquidity added: 10 USDC + 1000 ARCTIC');
+  console.log("\nTrying addLiquidity(5 USDC, 500 ARCTIC)...");
+  
+  try {
+    // Estimate gas first
+    const gas = await dex.addLiquidity.estimateGas(usdcAmount, arcticAmount);
+    console.log("Estimated gas:", gas.toString());
+  } catch(e) {
+    console.log("Estimate gas failed:", e.message);
+  }
 
-  const info = await dexC.getPoolInfo();
-  console.log('Pool USDC:', ethers.formatUnits(info.usdcBalance, 6));
-  console.log('Pool ARCTIC:', ethers.formatUnits(info.arcticBalance, 18));
-
-  // Test quote
-  const quote = await dexC.getUsdcToArcticQuote(ethers.parseUnits('1', 6));
-  console.log('1 USDC =', ethers.formatUnits(quote.arcticOut, 18), 'ARCTIC');
+  try {
+    const tx = await dex.addLiquidity(usdcAmount, arcticAmount, { gasLimit: 500000 });
+    console.log("TX:", tx.hash);
+    const r = await tx.wait();
+    console.log("Status:", r.status);
+    if (r.status === 1) {
+      console.log("Liquidity added!");
+      const pool = await dex.getPoolInfo();
+      console.log("Pool USDC:", ethers.formatUnits(pool.usdcBal, 6));
+      console.log("Pool ARCTIC:", ethers.formatUnits(pool.arcticBal, 18));
+      console.log("LP Supply:", pool.lpSupply.toString());
+    }
+  } catch(e) {
+    console.log("addLiquidity failed:", e.shortMessage || e.message);
+    
+    // Try to simulate
+    try {
+      await dex.addLiquidity.staticCall(usdcAmount, arcticAmount);
+    } catch(e2) {
+      console.log("Static call error:", e2.reason || e2.message);
+    }
+  }
 }
 
-main().catch(e => console.error(e.message));
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
