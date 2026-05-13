@@ -89,6 +89,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <div class="header">
   <h1>❄️ Arctic Game</h1>
   <div class="wallet-info">
+    <span id="network-badge" style="font-size:.7rem;padding:2px 8px;border-radius:12px;background:var(--danger);color:#fff;display:none">Wrong Network</span>
     <span id="wallet-address" style="font-size:.8rem;color:var(--muted)"></span>
     <button id="btn-connect" class="btn btn-connect" onclick="connectWallet()">Connect Wallet</button>
     <button id="btn-disconnect" class="btn btn-danger" onclick="disconnectWallet()" style="display:none">Disconnect</button>
@@ -342,11 +343,86 @@ function initContracts() {
 }
 
 // ===== WALLET =====
-async function connectWallet() {
-  if (!window.ethereum) { showToast('MetaMask or compatible wallet required!', 'error'); return; }
+function getEthereumProvider() {
+  // Multi-wallet detection: MetaMask, OKX, Rabby, Zerion, etc.
+  if (window.ethereum) {
+    // If multiple providers, pick the right one
+    if (window.ethereum.providers && window.ethereum.providers.length > 0) {
+      // Prefer MetaMask, then OKX, then Rabby, then Zerion
+      for (var i = 0; i < window.ethereum.providers.length; i++) {
+        var p = window.ethereum.providers[i];
+        if (p.isMetaMask) return p;
+      }
+      for (var j = 0; j < window.ethereum.providers.length; j++) {
+        var pp = window.ethereum.providers[j];
+        if (pp.isOkxWallet || pp.isOKXWallet) return pp;
+      }
+      for (var k = 0; k < window.ethereum.providers.length; k++) {
+        var ppp = window.ethereum.providers[k];
+        if (ppp.isRabby) return ppp;
+      }
+      return window.ethereum.providers[0];
+    }
+    return window.ethereum;
+  }
+  // OKX Mobile sometimes uses window.okxwallet
+  if (window.okxwallet) return window.okxwallet;
+  return null;
+}
+
+async function switchToArcTestnet(provider) {
+  var chainIdHex = '0x' + CHAIN_ID.toString(16); // 0x4CC0F2
+  var chainName = 'ARC Testnet';
+  var rpcUrl = RPC_URL;
+  var explorerUrl = 'https://testnet.arcscan.app';
+  var currencySymbol = 'ARC';
   try {
-    var ethProvider = new ethers.BrowserProvider(window.ethereum);
+    // Try to switch chain first
+    await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chainIdHex }] });
+    log('Switched to ' + chainName, 'ok');
+    return true;
+  } catch(switchError) {
+    // Chain not added yet — add it
+    if (switchError.code === 4902 || switchError.code === -32603) {
+      try {
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: chainIdHex,
+            chainName: chainName,
+            rpcUrls: [rpcUrl],
+            blockExplorerUrls: [explorerUrl],
+            nativeCurrency: { name: 'ARC', symbol: currencySymbol, decimals: 18 }
+          }]
+        });
+        log('Added and switched to ' + chainName, 'ok');
+        return true;
+      } catch(addError) {
+        log('Add chain failed: ' + addError.message, 'err');
+        return false;
+      }
+    }
+    log('Switch chain failed: ' + switchError.message, 'err');
+    return false;
+  }
+}
+
+async function connectWallet() {
+  var eth = getEthereumProvider();
+  if (!eth) {
+    showToast('No wallet detected! Install MetaMask, OKX Wallet, Rabby, or Zerion.', 'error');
+    return;
+  }
+  try {
+    var ethProvider = new ethers.BrowserProvider(eth);
     var accounts = await ethProvider.send('eth_requestAccounts', []);
+    if (!accounts || accounts.length === 0) { showToast('No accounts found. Unlock your wallet.', 'error'); return; }
+    // Switch to ARC Testnet
+    var switched = await switchToArcTestnet(eth);
+    if (!switched) {
+      showToast('Please switch to ARC Testnet in your wallet!', 'error');
+      // Continue anyway — user can switch manually
+    }
     signer = await ethProvider.getSigner();
     walletAddress = accounts[0];
     document.getElementById('wallet-address').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
@@ -365,6 +441,14 @@ async function connectWallet() {
     document.getElementById('btn-swap').disabled = false;
     document.getElementById('btn-claim').disabled = false;
     log('Connected: ' + walletAddress, 'ok');
+    if (switched) {
+      log('Network: ARC Testnet (Chain ID: ' + CHAIN_ID + ')', 'ok');
+      document.getElementById('network-badge').style.display = 'none';
+    } else {
+      log('Warning: Still on wrong network. Switch to ARC Testnet.', 'err');
+      document.getElementById('network-badge').style.display = 'inline';
+      document.getElementById('network-badge').textContent = 'Switch to ARC Testnet';
+    }
     loadAllData();
   } catch(e) { log('Connect failed: ' + e.message, 'err'); }
 }
@@ -372,6 +456,7 @@ async function connectWallet() {
 function disconnectWallet() {
   walletAddress = ''; signer = null;
   document.getElementById('wallet-address').textContent = '';
+  document.getElementById('network-badge').style.display = 'none';
   document.getElementById('btn-connect').style.display = 'inline-block';
   document.getElementById('btn-disconnect').style.display = 'none';
   document.getElementById('btn-mint').disabled = true;
@@ -385,8 +470,9 @@ function disconnectWallet() {
 }
 
 function connectWalletIfAuto() {
-  if (!window.ethereum) return;
-  var ethProvider = new ethers.BrowserProvider(window.ethereum);
+  var eth = getEthereumProvider();
+  if (!eth) return;
+  var ethProvider = new ethers.BrowserProvider(eth);
   ethProvider.listAccounts().then(function(accounts) {
     if (accounts.length > 0) connectWallet();
   }).catch(function(){});
