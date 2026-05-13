@@ -337,6 +337,11 @@ let myStakedTokens = [];
 // ===== INIT =====
 document.getElementById('btn-connect').onclick = connectWallet;
 document.getElementById('btn-disconnect').onclick = disconnectWallet;
+// Hide loading screen after a short delay
+setTimeout(function() { 
+  var ld = document.getElementById('loading');
+  if(ld) ld.style.display = 'none';
+}, 1000);
 
 // ===== WALLET =====
 async function connectWallet() {
