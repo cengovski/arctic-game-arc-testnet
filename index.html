@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arctic - Polar Profit | ARC Testnet Game</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a1a;--card:#1a1a2e;--border:#2a2a4a;--accent:#00b4d8;--accent2:#0077b6;--green:#4ade80;--orange:#f59e0b;--text:#e0e0e0;--muted:#666}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:480px;margin:0 auto;padding:16px}
+header{text-align:center;padding:24px 0 16px}
+header h1{font-size:36px;font-weight:800;background:linear-gradient(135deg,#00b4d8,#0077b6,#4ade80);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:var(--muted);font-size:13px;margin-top:4px}
+.card{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:24px;margin-bottom:16px;border:1px solid var(--border)}
+.card h2{font-size:18px;margin-bottom:8px}
+.card h3{font-size:14px;margin:12px 0 8px;color:#aaa}
+.sub{color:var(--muted);font-size:12px;margin-bottom:12px}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:12px;padding:14px 24px;font-size:16px;font-weight:600;cursor:pointer;width:100%;transition:opacity .2s}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm{padding:8px 16px;font-size:13px;width:auto;border-radius:8px}
+.btn-orange{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.btn-green{background:linear-gradient(135deg,#4ade80,#22c55e)}
+.btn-red{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.btn-ghost{background:var(--border);color:#aaa}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:1;background:var(--card);color:var(--muted);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
+.tab.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:var(--accent)}
+.addr{font-family:monospace;color:var(--accent);font-size:13px}
+.bal{color:var(--green);font-size:20px;font-weight:700}
+.badge{display:inline-block;background:rgba(74,222,128,.15);color:var(--green);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;margin-top:4px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.row:last-child{border:none}
+.lbl{color:var(--muted);font-size:13px}
+.val{color:var(--text);font-size:13px;font-weight:600}
+.val-g{color:var(--green)}
+.val-o{color:var(--orange)}
+.val-a{color:var(--accent)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.stat{background:#0f0f23;border-radius:10px;padding:12px;text-align:center}
+.stat .emoji{font-size:24px;display:block;margin-bottom:4px}
+.stat .slbl{display:block;color:var(--muted);font-size:10px}
+.stat .sval{display:block;color:var(--accent);font-size:16px;font-weight:700;margin-top:2px}
+.mint-row{display:flex;align-items:center;gap:12px;margin:16px 0}
+.mint-row input[type=range]{flex:1;accent-color:var(--accent)}
+.mint-q{color:var(--accent);font-weight:700;font-size:20px;min-width:24px;text-align:center}
+.rarity-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03)}
+.nft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;margin:8px 0}
+.nft-card{background:#0f0f23;border-radius:8px;padding:8px;text-align:center;cursor:pointer;border:2px solid var(--border);transition:border-color .2s}
+.nft-card.sel{border-color:var(--accent)}
+.nft-card .ne{font-size:22px}
+.nft-card .ni{display:block;color:#aaa;font-size:10px;font-family:monospace}
+.nft-card .nr{display:block;color:var(--muted);font-size:9px}
+.tx-link{color:var(--accent);text-decoration:none;font-size:13px}
+.tx-link:hover{text-decoration:underline}
+.msg{padding:8px 12px;border-radius:8px;font-size:13px;margin-top:8px}
+.msg-ok{background:rgba(74,222,128,.12);color:var(--green)}
+.msg-err{background:rgba(239,68,68,.12);color:#ef4444}
+.msg-warn{background:rgba(245,158,11,.12);color:var(--orange)}
+.links a{display:block;color:var(--accent);text-decoration:none;padding:8px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.05)}
+.links a:last-child{border:none}
+footer{text-align:center;padding:24px 0;color:#333;font-size:11px}
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:99;transition:opacity .5s}
+#loading.hide{opacity:0;pointer-events:none}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div></div>
+<div class="wrap">
+<header>
+<h1>❄️ Arctic</h1>
+<p>Polar Profit • Web3 Game on ARC Testnet</p>
+</header>
+
+<div id="wallet-section" class="card">
+<h2>🔗 Wallet</h2>
+<div id="wallet-not-connected">
+<button class="btn" id="btn-connect">Connect Wallet</button>
+</div>
+<div id="wallet-connected" style="display:none">
+<div class="row"><span class="lbl">Address</span><span class="val addr" id="wallet-addr">-</span></div>
+<div class="row"><span class="lbl">Balance</span><span class="val val-g" id="wallet-bal">-</span></div>
+<div id="chain-badge"></div>
+<button class="btn btn-ghost btn-sm" id="btn-disconnect" style="margin-top:12px">Disconnect</button>
+</div>
+</div>
+
+<div id="game-area" style="display:none">
+<div class="tabs">
+<div class="tab on" data-tab="mint" onclick="switchTab('mint')">🎨 Mint</div>
+<div class="tab" data-tab="stake" onclick="switchTab('stake')">⛏️ Stake</div>
+<div class="tab" data-tab="market" onclick="switchTab('market')">🏪 Market</div>
+<div class="tab" data-tab="stats" onclick="switchTab('stats')">📊 Stats</div>
+</div>
+
+<!-- MINT TAB -->
+<div id="tab-mint" class="tab-content">
+<div class="card">
+<h2>🎨 Mint Arctic Beasts</h2>
+<p class="sub">FREE mint on ARC Testnet • Max 10 per tx</p>
+<div class="stat-grid">
+<div class="stat"><span class="emoji">🎨</span><span class="slbl">Total Minted</span><span class="sval" id="mint-supply">-</span></div>
+<div class="stat"><span class="emoji">🖼️</span><span class="slbl">Your NFTs</span><span class="sval" id="mint-mybal">-</span></div>
+</div>
+<h3>Rarity Tiers</h3>
+<div class="rarity-row"><span>🦊 Common</span><span style="color:#9ca3af">1x rewards</span></div>
+<div class="rarity-row"><span>🐧 Rare</span><span style="color:#3b82f6">3x rewards</span></div>
+<div class="rarity-row"><span>🐻‍❄️ Epic</span><span style="color:#a855f7">8x rewards</span></div>
+<div class="rarity-row"><span>🐉 Legendary</span><span style="color:#f59e0b">20x rewards</span></div>
+<div class="mint-row">
+<label style="font-size:13px;color:var(--muted)">Qty:</label>
+<input type="range" id="mint-qty" min="1" max="10" value="1" oninput="document.getElementById('mq').textContent=this.value">
+<span class="mint-q" id="mq">1</span>
+</div>
+<button class="btn" id="btn-mint" onclick="doMint()">❄️ Mint FREE</button>
+<div id="mint-msg"></div>
+</div>
+</div>
+
+<!-- STAKE TAB -->
+<div id="tab-stake" class="tab-content" style="display:none">
+<div class="card">
+<h2>⛏️ Ice Mine (Staking)</h2>
+<p class="sub">Stake Arctic Beasts → earn $ARCTIC every second</p>
+<div class="stat-grid">
+<div class="stat"><span class="emoji">🪙</span><span class="slbl">Your $ARCTIC</span><span class="sval" id="stk-arctic">-</span></div>
+<div class="stat"><span class="emoji">⏳</span><span class="slbl">Pending</span><span class="sval" id="stk-pending" style="color:var(--orange)">-</span></div>
+<div class="stat"><span class="emoji">⛏️</span><span class="slbl">Total Staked</span><span class="sval" id="stk-total">-</span></div>
+<div class="stat"><span class="emoji">🖼️</span><span class="slbl">Your NFTs</span><span class="sval" id="stk-nftbal">-</span></div>
+</div>
+<div id="stake-approve-section">
+<button class="btn btn-orange" id="btn-approve" onclick="doApprove()">✅ Approve Staking Contract</button>
+</div>
+<div id="stake-actions" style="display:none">
+<h3>Your Unstaked NFTs — Select to Stake</h3>
+<div class="nft-grid" id="unstaked-grid"></div>
+<button class="btn btn-green btn-sm" id="btn-stake" onclick="doStake()" style="margin-top:8px">⬇️ Stake Selected</button>
+<h3 style="margin-top:16px">Your Staked NFTs — Select to Unstake</h3>
+<div class="nft-grid" id="staked-grid"></div>
+<button class="btn btn-red btn-sm" id="btn-unstake" onclick="doUnstake()" style="margin-top:8px">⬆️ Unstake Selected</button>
+<button class="btn btn-orange" id="btn-claim" onclick="doClaim()" style="margin-top:16px">🎁 Claim <span id="claim-amt">0</span> $ARCTIC</button>
+</div>
+<div id="stake-msg"></div>
+</div>
+</div>
+
+<!-- MARKET TAB -->
+<div id="tab-market" class="tab-content" style="display:none">
+<div class="card">
+<h2>🏪 Marketplace</h2>
+<p class="sub">List your NFTs or buy from others</p>
+<div class="stat-grid">
+<div class="stat"><span class="emoji">📋</span><span class="slbl">Active Listings</span><span class="sval" id="mkt-listings">-</span></div>
+<div class="stat"><span class="emoji">🖼️</span><span class="slbl">Your NFTs</span><span class="sval" id="mkt-mybal">-</span></div>
+</div>
+<h3>List an NFT for Sale</h3>
+<div style="display:flex;gap:8px;margin:8px 0">
+<input type="number" id="list-tokenid" placeholder="Token ID" style="flex:1;background:#0f0f23;border:1px solid var(--border);border-radius:8px;padding:10px;color:#fff;font-size:14px">
+<input type="number" id="list-price" placeholder="Price (USDC)" style="flex:1;background:#0f0f23;border:1px solid var(--border);border-radius:8px;padding:10px;color:#fff;font-size:14px">
+</div>
+<button class="btn btn-sm" id="btn-list" onclick="doList()" style="width:auto">📋 List for Sale</button>
+<h3 style="margin-top:16px">Active Listings</h3>
+<div id="market-listings"></div>
+<div id="market-msg"></div>
+</div>
+</div>
+
+<!-- STATS TAB -->
+<div id="tab-stats" class="tab-content" style="display:none">
+<div class="card">
+<h2>📊 Game Stats</h2>
+<div class="stat-grid">
+<div class="stat"><span class="emoji">🪙</span><span class="slbl">$ARCTIC Supply</span><span class="sval" id="stat-supply">-</span></div>
+<div class="stat"><span class="emoji">🎨</span><span class="slbl">Beasts Minted</span><span class="sval" id="stat-nftsupply">-</span></div>
+<div class="stat"><span class="emoji">⛏️</span><span class="slbl">Total Staked</span><span class="sval" id="stat-staked">-</span></div>
+<div class="stat"><span class="emoji">⚡</span><span class="slbl">Base Reward</span><span class="sval" id="stat-reward">1/hr</span></div>
+</div>
+<div id="stat-user" style="display:none">
+<h3>Your Stats</h3>
+<div class="row"><span class="lbl">$ARCTIC Balance</span><span class="val val-g" id="stat-my-arctic">-</span></div>
+<div class="row"><span class="lbl">NFT Balance</span><span class="val val-a" id="stat-my-nft">-</span></div>
+</div>
+<h3 style="margin-top:16px">🔗 Quick Links</h3>
+<div class="links">
+<a href="https://faucet.circle.com" target="_blank" rel="noreferrer">💧 Circle Faucet (Free USDC)</a>
+<a href="https://testnet.arcscan.app/address/0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E" target="_blank" rel="noreferrer">📜 NFT Contract</a>
+<a href="https://testnet.arcscan.app/address/0xf979AF495e2a04A264E97524932f67F65E20bA5f" target="_blank" rel="noreferrer">⛏️ Staking Contract</a>
+<a href="https://testnet.arcscan.app/address/0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf" target="_blank" rel="noreferrer">🪙 Token Contract</a>
+<a href="https://testnet.arcscan.app/address/0xA9bfe3b282d7925c83Bb1a5871f64FdDD9A8A43c" target="_blank" rel="noreferrer">🏪 Market Contract</a>
+</div>
+</div>
+</div>
+</div>
+
+<footer>
+<p>Arctic Game v1.0 • ARC Testnet • Built with ❤️ for the community</p>
+</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<script>
+// ===== CONFIG =====
+const CHAIN_ID = 5042002;
+const RPC_URL = 'https://rpc.testnet.arc.network';
+const EXPLORER = 'https://testnet.arcscan.app';
+const CONTRACTS = {
+  ArcticToken:  '0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf',
+  ArcticBeasts: '0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E',
+  ArcticStaking:'0xf979AF495e2a04A264E97524932f67F65E20bA5f',
+  ArcticMarket: '0xA9bfe3b282d7925c83Bb1a5871f64FdDD9A8A43c',
+};
+
+const NFT_ABI = [
+  'function mint(uint256 quantity) external',
+  'function totalSupply() view returns (uint256)',
+  'function balanceOf(address owner) view returns (uint256)',
+  'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
+  'function tokenRarity(uint256) view returns (uint8)',
+  'function tokenStakingPower(uint256) view returns (uint256)',
+  'function ownerOf(uint256) view returns (address)',
+  'function setApprovalForAll(address operator, bool approved) external',
+  'function isApprovedForAll(address, address) view returns (bool)',
+];
+
+const STAKING_ABI = [
+  'function stake(uint256[] calldata tokenIds) external',
+  'function unstake(uint256[] calldata tokenIds) external',
+  'function claim() external',
+  'function pendingRewards(address user) view returns (uint256)',
+  'function getStakedTokens(address user) view returns (uint256[])',
+  'function totalStaked() view returns (uint256)',
+  'function baseRewardPerHour() view returns (uint256)',
+];
+
+const TOKEN_ABI = [
+  'function balanceOf(address) view returns (uint256)',
+  'function decimals() view returns (uint8)',
+  'function totalSupply() view returns (uint256)',
+];
+
+const MARKET_ABI = [
+  'function list(uint256 tokenId, uint256 price) external',
+  'function buy(uint256 listingId) external payable',
+  'function cancelListing(uint256 listingId) external',
+  'function getListing(uint256 listingId) view returns (address seller, uint256 tokenId, uint256 price, bool active)',
+  'function activeListingIds(uint256) view returns (uint256)',
+  'function listingCount() view returns (uint256)',
+  'function setApprovalForAll(address operator, bool approved) external',
+  'function isApprovedForAll(address, address) view returns (bool)',
+];
+
+const RARITY_NAMES = ['','Common','Rare','Epic','Legendary'];
+const RARITY_EMOJIS = ['','🦊','🐧','🐻‍❄️','🐉'];
+const RARITY_COLORS = ['','#9ca3af','#3b82f6','#a855f7','#f59e0b'];
+
+// ===== STATE =====
+let provider, signer, address;
+let contracts = {};
+let selectedStake = new Set();
+let selectedUnstake = new Set();
+let myUnstakedTokens = [];
+let myStakedTokens = [];
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => document.getElementById('loading').classList.add('hide'), 800);
+  document.getElementById('btn-connect').addEventListener('click', connectWallet);
+  document.getElementById('btn-disconnect').addEventListener('click', disconnectWallet);
+  if (window.ethereum) {
+    window.ethereum.on('accountsChanged', () => location.reload());
+    window.ethereum.on('chainChanged', () => location.reload());
+  }
+});
+
+// ===== WALLET =====
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert('MetaMask or compatible wallet required!');
+    return;
+  }
+  try {
+    const chainHex = '0x' + CHAIN_ID.toString(16);
+    try {
+      await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chainHex }] });
+    } catch (e) {
+      if (e.code === 4902) {
+        await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{
+          chainId: chainHex,
+          chainName: 'Arc Testnet',
+          rpcUrls: [RPC_URL],
+          blockExplorerUrls: [EXPLORER],
+          nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+        }]});
+      }
+    }
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send('eth_requestAccounts', []);
+    signer = await provider.getSigner();
+    address = await signer.getAddress();
+
+    contracts = {
+      nft: new ethers.Contract(CONTRACTS.ArcticBeasts, NFT_ABI, signer),
+      staking: new ethers.Contract(CONTRACTS.ArcticStaking, STAKING_ABI, signer),
+      token: new ethers.Contract(CONTRACTS.ArcticToken, TOKEN_ABI, signer),
+      market: new ethers.Contract(CONTRACTS.ArcticMarket, MARKET_ABI, signer),
+      nftRO: new ethers.Contract(CONTRACTS.ArcticBeasts, NFT_ABI, provider),
+      stakingRO: new ethers.Contract(CONTRACTS.ArcticStaking, STAKING_ABI, provider),
+      tokenRO: new ethers.Contract(CONTRACTS.ArcticToken, TOKEN_ABI, provider),
+      marketRO: new ethers.Contract(CONTRACTS.ArcticMarket, MARKET_ABI, provider),
+    };
+
+    document.getElementById('wallet-not-connected').style.display = 'none';
+    document.getElementById('wallet-connected').style.display = '';
+    document.getElementById('game-area').style.display = '';
+    document.getElementById('wallet-addr').textContent = address.slice(0,6)+'...'+address.slice(-4);
+
+    const bal = await provider.getBalance(address);
+    document.getElementById('wallet-bal').textContent = parseFloat(ethers.formatEther(bal)).toFixed(4) + ' ETH';
+
+    const chain = await provider.getNetwork();
+    const badge = document.getElementById('chain-badge');
+    if (chain.chainId === BigInt(CHAIN_ID)) {
+      badge.innerHTML = '<span class="badge">✅ ARC Testnet</span>';
+    } else {
+      badge.innerHTML = '<span class="msg msg-err" style="display:block;margin-top:8px">Wrong network! Switch to ARC Testnet</span>';
+    }
+
+    await refreshAll();
+    setInterval(refreshAll, 15000);
+  } catch(e) {
+    console.error(e);
+    alert('Connection failed: ' + e.message);
+  }
+}
+
+function disconnectWallet() {
+  location.reload();
+}
+
+// ===== TABS =====
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(c => c.style.display = c.id === 'tab-' + name ? '' : 'none');
+  if (name === 'stake') refreshStakeTab();
+  if (name === 'market') refreshMarketTab();
+}
+
+// ===== REFRESH =====
+async function refreshAll() {
+  if (!address) return;
+  try {
+    // Mint tab
+    const supply = await contracts.nftRO.totalSupply();
+    document.getElementById('mint-supply').textContent = supply.toString() + ' / 10,000';
+    const myBal = await contracts.nftRO.balanceOf(address);
+    document.getElementById('mint-mybal').textContent = myBal.toString();
+
+    // Stats
+    document.getElementById('stat-nftsupply').textContent = supply.toString();
+    const ts = await contracts.stakingRO.totalStaked();
+    document.getElementById('stat-staked').textContent = ts.toString();
+    const totalSupply = await contracts.tokenRO.totalSupply();
+    document.getElementById('stat-supply').textContent = (Number(totalSupply) / 1e18).toLocaleString();
+    const arcticBal = await contracts.tokenRO.balanceOf(address);
+    document.getElementById('stat-my-arctic').textContent = (Number(arcticBal) / 1e18).toLocaleString();
+    document.getElementById('stat-my-nft').textContent = myBal.toString();
+    document.getElementById('stat-user').style.display = '';
+
+    // Stake tab
+    const arcticBal2 = await contracts.tokenRO.balanceOf(address);
+    document.getElementById('stk-arctic').textContent = (Number(arcticBal2) / 1e18).toFixed(3);
+    const pending = await contracts.stakingRO.pendingRewards(address);
+    document.getElementById('stk-pending').textContent = (Number(pending) / 1e18).toFixed(3);
+    document.getElementById('claim-amt').textContent = (Number(pending) / 1e18).toFixed(3);
+    document.getElementById('stk-total').textContent = ts.toString();
+    document.getElementById('stk-nftbal').textContent = myBal.toString();
+
+    // Market
+    const mktBal = await contracts.nftRO.balanceOf(address);
+    document.getElementById('mkt-mybal').textContent = mktBal.toString();
+  } catch(e) { console.error('refreshAll:', e); }
+}
+
+async function refreshStakeTab() {
+  if (!address) return;
+  try {
+    const isApproved = await contracts.nftRO.isApprovedForAll(address, CONTRACTS.ArcticStaking);
+    document.getElementById('stake-approve-section').style.display = isApproved ? 'none' : '';
+    document.getElementById('stake-actions').style.display = isApproved ? '' : 'none';
+
+    if (isApproved) {
+      // Get staked tokens
+      const staked = await contracts.stakingRO.getStakedTokens(address);
+      myStakedTokens = staked.map(t => Number(t));
+
+      // Get all owned tokens
+      const bal = await contracts.nftRO.balanceOf(address);
+      const owned = [];
+      for (let i = 0; i < Number(bal); i++) {
+        const id = await contracts.nftRO.tokenOfOwnerByIndex(address, i);
+        owned.push(Number(id));
+      }
+      // Unstaked = owned - staked
+      const stakedSet = new Set(myStakedTokens);
+      myUnstakedTokens = owned.filter(id => !stakedSet.has(id));
+
+      renderNFTGrid('unstaked-grid', myUnstakedTokens, selectedStake, 'stake');
+      renderNFTGrid('staked-grid', myStakedTokens, selectedUnstake, 'unstake');
+    }
+  } catch(e) { console.error('refreshStakeTab:', e); }
+}
+
+function renderNFTGrid(containerId, tokens, selectedSet, type) {
+  const el = document.getElementById(containerId);
+  if (!tokens.length) {
+    el.innerHTML = '<p style="color:#444;font-size:12px">No NFTs</p>';
+    return;
+  }
+  el.innerHTML = tokens.map(id => {
+    const sel = selectedSet.has(id);
+    return `<div class="nft-card ${sel ? 'sel' : ''}" onclick="toggleNFT('${type}',${id})">
+      <span class="ne">${RARITY_EMOJIS[1]}</span>
+      <span class="ni">#${id}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleNFT(type, id) {
+  const set = type === 'stake' ? selectedStake : selectedUnstake;
+  if (set.has(id)) set.delete(id); else set.add(id);
+  if (type === 'stake') renderNFTGrid('unstaked-grid', myUnstakedTokens, selectedStake, 'stake');
+  else renderNFTGrid('staked-grid', myStakedTokens, selectedUnstake, 'unstake');
+}
+
+async function refreshMarketTab() {
+  if (!address) return;
+  try {
+    const count = await contracts.marketRO.listingCount();
+    const listings = [];
+    for (let i = 0; i < Number(count); i++) {
+      const id = await contracts.marketRO.activeListingIds(i);
+      const l = await contracts.marketRO.getListing(id);
+      if (l.active) listings.push({ id: Number(id), seller: l.seller, tokenId: Number(l.tokenId), price: l.price });
+    }
+    document.getElementById('mkt-listings').textContent = listings.length;
+    const el = document.getElementById('market-listings');
+    if (!listings.length) {
+      el.innerHTML = '<p style="color:#444;font-size:12px">No active listings</p>';
+    } else {
+      el.innerHTML = listings.map(l => `<div class="row">
+        <span class="lbl">#${l.tokenId} by ${l.seller.slice(0,6)}...</span>
+        <span class="val val-a">${(Number(l.price) / 1e6).toFixed(2)} USDC</span>
+        <button class="btn btn-sm btn-green" onclick="doBuy(${l.id})">Buy</button>
+      </div>`).join('');
+    }
+  } catch(e) { console.error('refreshMarket:', e); }
+}
+
+// ===== ACTIONS =====
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+}
+function clearMsg(id) { document.getElementById(id).innerHTML = ''; }
+
+async function doMint() {
+  const qty = parseInt(document.getElementById('mint-qty').value);
+  clearMsg('mint-msg');
+  try {
+    const tx = await contracts.nft.mint(qty);
+    showMsg('mint-msg', `⏳ Confirming... ${tx.hash.slice(0,10)}...`, 'warn');
+    await tx.wait();
+    showMsg('mint-msg', `✅ Minted ${qty} NFTs! <a class="tx-link" href="${EXPLORER}/tx/${tx.hash}" target="_blank">View TX</a>`, 'ok');
+    await refreshAll();
+  } catch(e) {
+    showMsg('mint-msg', '❌ ' + (e.reason || e.message), 'err');
+  }
+}
+
+async function doApprove() {
+  try {
+    const tx = await contracts.nft.setApprovalForAll(CONTRACTS.ArcticStaking, true);
+    showMsg('stake-msg', '⏳ Confirming approval...', 'warn');
+    await tx.wait();
+    showMsg('stake-msg', '✅ Approved! You can now stake.', 'ok');
+    await refreshStakeTab();
+  } catch(e) {
+    showMsg('stake-msg', '❌ ' + (e.reason || e.message), 'err');
+  }
+}
+
+async function doStake() {
+  if (!selectedStake.size) return;
+  try {
+    const ids = [...selectedStake];
+    const tx = await contracts.staking.stake(ids);
+    showMsg('stake-msg', `⏳ Staking ${ids.length} NFTs...`, 'warn');
+    await tx.wait();
+    selectedStake.clear();
+    showMsg('stake-msg', '✅ Staked!', 'ok');
+    await refreshAll();
+    await refreshStakeTab();
+  } catch(e) {
+    showMsg('stake-msg', '❌ ' + (e.reason || e.message), 'err');
+  }
+}
+
+async function doUnstake() {
+  if (!selectedUnstake.size) return;
+  try {
+    const ids = [...selectedUnstake];
+    const tx = await contracts.staking.unstake(ids);
+    showMsg('stake-msg', `⏳ Unstaking ${ids.length} NFTs...`, 'warn');
+    await tx.wait();
+    selectedUnstake.clear();
+    showMsg('stake-msg', '✅ Unstaked!', 'ok');
+    await refreshAll();
+    await refreshStakeTab();
+  } catch(e) {
+    showMsg('stake-msg', '❌ ' + (e.reason || e.message), 'err');
+  }
+}
+
+async function doClaim() {
+  try {
+    const tx = await contracts.staking.claim();
+    showMsg('stake-msg', '⏳ Claiming rewards...', 'warn');
+    await tx.wait();
+    showMsg('stake-msg', '✅ Rewards claimed!', 'ok');
+    await refreshAll();
+    await refreshStakeTab();
+  } catch(e) {
+    showMsg('stake-msg', '❌ ' + (e.reason || e.message), 'err');
+  }
+}
+
+async function doList() {
+  const tokenId = parseInt(document.getElementById('list-tokenid').value);
+  const price = document.getElementById('list-price').value;
+  if (!tokenId || !price) { showMsg('market-msg', 'Fill token ID and price', 'err'); return; }
+  try {
+    // Approve market if needed
+    const isApproved = await contracts.nftRO.isApprovedForAll(address, CONTRACTS.ArcticMarket);
+    if (!isApproved) {
+      const ap = await contracts.nft.setApprovalForAll(CONTRACTS.ArcticMarket, true);
+      showMsg('market-msg', '⏳ Approving market...', 'warn');
+      await ap.wait();
+    }
+    const priceWei = ethers.parseUnits(price, 6);
+    const tx = await contracts.market.list(tokenId, priceWei);
+    showMsg('market-msg', `⏳ Listing #${tokenId}...`, 'warn');
+    await tx.wait();
+    showMsg('market-msg', `✅ Listed #${tokenId} for ${price} USDC!`, 'ok');
+    await refreshMarketTab();
+  } catch(e) {
+    showMsg('market-msg', '❌ ' + (e.reason || e.message), 'err');
+  }
+}
+
+async function doBuy(listingId) {
+  try {
+    const l = await contracts.marketRO.getListing(listingId);
+    const tx = await contracts.market.buy(listingId, { value: l.price });
+    showMsg('market-msg', '⏳ Buying...', 'warn');
+    await tx.wait();
+    showMsg('market-msg', '✅ Purchased!', 'ok');
+    await refreshAll();
+    await refreshMarketTab();
+  } catch(e) {
+    showMsg('market-msg', '❌ ' + (e.reason || e.message), 'err');
+  }
+}
+</script>
+</body>
+</html>
