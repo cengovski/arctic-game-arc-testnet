@@ -335,10 +335,8 @@ let myUnstakedTokens = [];
 let myStakedTokens = [];
 
 // ===== INIT =====
-window.addEventListener('load', function() {
-  document.getElementById('btn-connect').onclick = connectWallet;
-  document.getElementById('btn-disconnect').onclick = disconnectWallet;
-});
+document.getElementById('btn-connect').onclick = connectWallet;
+document.getElementById('btn-disconnect').onclick = disconnectWallet;
 
 // ===== WALLET =====
 async function connectWallet() {
