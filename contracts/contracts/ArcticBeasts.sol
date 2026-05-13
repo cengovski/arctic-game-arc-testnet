@@ -65,11 +65,11 @@ contract ArcticBeasts is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     }
 
     function _determineRarity(uint256 tokenId) internal pure returns (uint8) {
-        uint256 roll = (tokenId * 2654435761) % 100;
-        if (roll < 5) return 4;       // Legendary: 5%
-        if (roll < 20) return 3;      // Epic: 15%
-        if (roll < 50) return 2;      // Rare: 30%
-        return 1;                      // Common: 50%
+        uint256 roll = (tokenId * 2654435761 + (tokenId >> 3)) % 100;
+        if (roll < 3) return 4;       // Legendary: 3%
+        if (roll < 15) return 3;      // Epic: 12%
+        if (roll < 40) return 2;      // Rare: 25%
+        return 1;                      // Common: 60%
     }
 
     function getRarityName(uint256 tokenId) external view returns (string memory) {
