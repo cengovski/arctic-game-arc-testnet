@@ -335,20 +335,10 @@ let myUnstakedTokens = [];
 let myStakedTokens = [];
 
 // ===== INIT =====
-function init() {
-  setTimeout(() => document.getElementById('loading').classList.add('hide'), 800);
-  document.getElementById('btn-connect').addEventListener('click', connectWallet);
-  document.getElementById('btn-disconnect').addEventListener('click', disconnectWallet);
-  if (window.ethereum) {
-    window.ethereum.on('accountsChanged', () => location.reload());
-    window.ethereum.on('chainChanged', () => location.reload());
-  }
-}
-if (document.readyState === 'complete') {
-  init();
-} else {
-  window.addEventListener('DOMContentLoaded', init);
-}
+window.addEventListener('load', function() {
+  document.getElementById('btn-connect').onclick = connectWallet;
+  document.getElementById('btn-disconnect').onclick = disconnectWallet;
+});
 
 // ===== WALLET =====
 async function connectWallet() {
@@ -388,6 +378,7 @@ async function connectWallet() {
     document.getElementById('wallet-not-connected').style.display = 'none';
     document.getElementById('wallet-connected').style.display = '';
     document.getElementById('game-area').style.display = '';
+    document.getElementById('loading').style.display = 'none';
     document.getElementById('wallet-addr').textContent = address.slice(0,6)+'...'+address.slice(-4);
 
     const bal = await provider.getBalance(address);
