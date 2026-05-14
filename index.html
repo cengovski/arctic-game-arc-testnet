@@ -589,6 +589,19 @@ function toggleSSel(el,id){
 async function stakeSel(){
   if(!selW.length)return;
   try{
+    // Check/set approval for staking contract
+    var approved=await contracts.beasts.isApprovedForAll(wallet,C.staking);
+    if(!approved){
+      txLog("Setting staking approval...","pending");
+      try{
+        var apTx=await contracts.beasts.setApprovalForAll(C.staking,true);
+        await apTx.wait();
+        txLog("Staking approval set!","ok",apTx.hash);
+      }catch(e){
+        toast("Approval rejected!","error");
+        return;
+      }
+    }
     txLog("Staking "+selW.length+"...","pending");
     var ids=selW.map(function(x){return ethers.toBigInt(x);});
     var tx=await contracts.staking.stake(ids);
