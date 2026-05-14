@@ -125,6 +125,15 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     </div>
   </div>
   <div class="card"><h3>&#x1F5BC;&#xFE0F; Your Beasts</h3><div id="m-list" class="nft-grid"></div></div>
+  <div class="card">
+    <h3>&#x1F4E4; Transfer NFT</h3>
+    <p style="color:var(--muted);font-size:.7rem;margin-bottom:8px">Send one of your NFTs to another address.</p>
+    <div class="input-row">
+      <input type="number" id="m-tid" placeholder="Token ID" min="1" style="width:80px">
+      <input type="text" id="m-to" placeholder="Recipient (0x...)" style="width:260px;font-size:.7rem">
+      <button class="btn btn-warning" id="btn-transfer" onclick="transferNFT()" disabled>&#x1F4E4; Transfer</button>
+    </div>
+  </div>
 </div>
 
 <!-- ==================== STAKING PAGE ==================== -->
@@ -382,6 +391,7 @@ async function connect(){
     document.getElementById("btn-list").disabled=false;
     document.getElementById("btn-unlist").disabled=false;
     document.getElementById("btn-swap").disabled=false;
+    document.getElementById("btn-transfer").disabled=false;
     if(ok)document.getElementById("net-badge").style.display="none";
     else{document.getElementById("net-badge").style.display="inline";document.getElementById("net-badge").textContent="Switch Network";}
     txLog("Connected: "+wallet.slice(0,10)+"...","ok");
@@ -493,6 +503,28 @@ async function mint(){
   }catch(e){
     txLog("Mint failed: "+e.message,"err");
     toast("Mint failed!","error");
+  }
+}
+async function transferNFT(){
+  var tid=parseInt(document.getElementById("m-tid").value)||0;
+  var to=document.getElementById("m-to").value.trim();
+  if(tid<1){toast("Enter token ID","error");return;}
+  if(!to||!to.startsWith("0x")||to.length!==42){toast("Enter valid address (0x...)","error");return;}
+  try{
+    // Check ownership
+    var owner=await contracts.beasts.ownerOf(tid);
+    if(owner.toLowerCase()!==wallet.toLowerCase()){toast("You don't own #"+tid+"!","error");return;}
+    txLog("Transferring #"+tid+" to "+to.slice(0,6)+"...","pending");
+    var tx=await contracts.beasts.transferFrom(wallet,to,tid);
+    await tx.wait();
+    txLog("Transferred #"+tid+"!","ok",tx.hash);
+    toast("Transferred!","success");
+    document.getElementById("m-tid").value="";
+    document.getElementById("m-to").value="";
+    loadAll();
+  }catch(e){
+    txLog("Transfer failed: "+e.message,"err");
+    toast("Transfer failed!","error");
   }
 }
 
