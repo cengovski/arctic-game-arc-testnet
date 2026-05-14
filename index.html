@@ -791,14 +791,25 @@ function swapDir(){
   document.getElementById("sw-to").value=f;
   calcOut();
 }
+function toWei(amt, decimals){
+  // Proper decimal handling: USDC=6, ARCTIC=18
+  var str=amt.toString();
+  var parts=str.split(".");
+  var intPart=parts[0]||"0";
+  var fracPart=(parts[1]||"").padEnd(decimals,"0").slice(0,decimals);
+  return BigInt(intPart+fracPart);
+}
 async function calcOut(){
   var amt=parseFloat(document.getElementById("sw-amt").value)||0;
   var from=document.getElementById("sw-from").value;
   if(amt<=0){document.getElementById("sw-out").value="";document.getElementById("sw-info").textContent="";return;}
   try{
     var isUSDC=from==="usdc";
-    var out=await contracts.dex.getOutputAmount(ethers.parseEther(amt.toString()),isUSDC);
-    var outVal=parseFloat(ethers.formatEther(out));
+    var dec=isUSDC?6:18;
+    var amtWei=toWei(amt,dec);
+    var out=await contracts.dex.getOutputAmount(amtWei,isUSDC);
+    var outDec=isUSDC?18:6;
+    var outVal=Number(out)/Math.pow(10,outDec);
     document.getElementById("sw-out").value=outVal.toFixed(6);
     var slip=parseFloat(document.getElementById("sw-slip").value)/100;
     var minOut=outVal*(1-slip);
@@ -817,9 +828,16 @@ async function execSwap(){
   var isUSDC=from==="usdc";
   var slip=parseFloat(document.getElementById("sw-slip").value)/100;
   try{
-    var amtWei=ethers.parseEther(amt.toString());
+    // Balance check
+    var bal=isUSDC?await contracts.usdc.balanceOf(wallet):await contracts.token.balanceOf(wallet);
+    var balVal=Number(bal)/Math.pow(10,isUSDC?6:18);
+    if(balVal<amt){toast("Insufficient "+from.toUpperCase()+" balance (have "+balVal.toFixed(4)+")","error");return;}
+    var dec=isUSDC?6:18;
+    var amtWei=toWei(amt,dec);
     var out=await contracts.dex.getOutputAmount(amtWei,isUSDC);
-    var minOut=out-BigInt(Math.floor(Number(out)*slip));
+    var outDec=isUSDC?18:6;
+    var outVal=Number(out)/Math.pow(10,outDec);
+    var minOutWei=BigInt(Math.floor(Number(out)*(1-slip)));
     // Approve input token
     var tokenC=isUSDC?contracts.usdc:contracts.token;
     var allowance=await tokenC.allowance(wallet,C.dex);
@@ -830,7 +848,7 @@ async function execSwap(){
       txLog("Approved!","ok",apTx.hash);
     }
     txLog("Swapping "+amt+" "+from.toUpperCase()+"...","pending");
-    var tx=isUSDC?await contracts.dex.swapUSDCToARCTIC(amtWei,minOut):await contracts.dex.swapARCTICToUSDC(amtWei,minOut);
+    var tx=isUSDC?await contracts.dex.swapUSDCToARCTIC(amtWei,minOutWei):await contracts.dex.swapARCTICToUSDC(amtWei,minOutWei);
     await tx.wait();
     txLog("Swapped!","ok",tx.hash);
     toast("Swapped!","success");
