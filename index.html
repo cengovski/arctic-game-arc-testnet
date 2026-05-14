@@ -607,21 +607,23 @@ async function claim(){
 async function loadMarket(){
   if(!wallet)return;
   try{
-    // Use getActiveListings() — returns all active listings in one call
-    var activeListings=await contracts.market.getActiveListings();
+    // Use listingCount + getListing (getActiveListings may revert)
+    var count=await contracts.market.listingCount();
     allListings=[];
     var mine=0;
-    for(var i=0;i<activeListings.length;i++){
-      var l=activeListings[i];
-      if(l[3]){ // active
-        var seller=l[0];
-        var tokenId=l[1].toString();
-        var price=l[2];
-        var rarity=1;
-        try{rarity=Number(await contracts.beasts.tokenRarity(tokenId));}catch(e){}
-        allListings.push({idx:i,tokenId:tokenId,seller:seller,price:ethers.formatEther(price),rarity:rarity});
-        if(seller.toLowerCase()===wallet.toLowerCase())mine++;
-      }
+    for(var i=0;i<Number(count);i++){
+      try{
+        var listing=await contracts.market.getListing(i);
+        if(listing[3]){ // active
+          var seller=listing[0];
+          var tokenId=listing[1].toString();
+          var price=listing[2];
+          var rarity=1;
+          try{rarity=Number(await contracts.beasts.tokenRarity(tokenId));}catch(e){}
+          allListings.push({idx:i,tokenId:tokenId,seller:seller,price:ethers.formatEther(price),rarity:rarity});
+          if(seller.toLowerCase()===wallet.toLowerCase())mine++;
+        }
+      }catch(e){}
     }
     document.getElementById("mk-total").textContent=allListings.length;
     document.getElementById("mk-mine").textContent=mine;
@@ -631,32 +633,6 @@ async function loadMarket(){
     renderMarketWallet();
   }catch(e){
     txLog("Market load: "+e.message,"err");
-    // Fallback: try old method
-    try{
-      var count=await contracts.market.listingCount();
-      allListings=[];
-      var mine=0;
-      for(var i=0;i<Number(count);i++){
-        try{
-          var listing=await contracts.market.getListing(i);
-          if(listing[3]){
-            var seller=listing[0];
-            var tokenId=listing[1].toString();
-            var price=listing[2];
-            var rarity=1;
-            try{rarity=Number(await contracts.beasts.tokenRarity(tokenId));}catch(e){}
-            allListings.push({idx:i,tokenId:tokenId,seller:seller,price:ethers.formatEther(price),rarity:rarity});
-            if(seller.toLowerCase()===wallet.toLowerCase())mine++;
-          }
-        }catch(e){}
-      }
-      document.getElementById("mk-total").textContent=allListings.length;
-      document.getElementById("mk-mine").textContent=mine;
-      renderMarket();
-      renderMarketWallet();
-    }catch(e2){
-      txLog("Market fallback: "+e2.message,"err");
-    }
   }
 }
 function renderMarket(){
