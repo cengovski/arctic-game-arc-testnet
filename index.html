@@ -712,13 +712,31 @@ async function listNFT(){
   var price=parseFloat(priceInput);
   if(isNaN(price)||price<0.001){toast("Min price: 0.001 ARCTIC","error");return;}
   try{
+    // Check if user owns the selected NFTs
+    for(var i=0;i<mkSel.length;i++){
+      try{
+        var owner=await contracts.beasts.ownerOf(mkSel[i]);
+        if(owner.toLowerCase()!==wallet.toLowerCase()){
+          toast("You don't own #"+mkSel[i]+"!","error");
+          return;
+        }
+      }catch(e){
+        toast("Token #"+mkSel[i]+" doesn't exist!","error");
+        return;
+      }
+    }
     // Check/set approval
     var approved=await contracts.beasts.isApprovedForAll(wallet,C.market);
     if(!approved){
       txLog("Setting approval...","pending");
-      var apTx=await contracts.beasts.setApprovalForAll(C.market,true);
-      await apTx.wait();
-      txLog("Approval set!","ok",apTx.hash);
+      try{
+        var apTx=await contracts.beasts.setApprovalForAll(C.market,true);
+        await apTx.wait();
+        txLog("Approval set!","ok",apTx.hash);
+      }catch(e){
+        toast("Approval rejected or failed!","error");
+        return;
+      }
     }
     var priceWei=ethers.parseEther(price.toFixed(6));
     for(var i=0;i<mkSel.length;i++){
