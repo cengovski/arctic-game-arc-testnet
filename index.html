@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arctic Game - Web3 Idle Farming</title>
-<script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js">showPage(getHashPage());
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0e1a;--card:#111827;--border:#1e293b;--primary:#3b82f6;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--muted:#64748b;--ice:#a5f3fc}
@@ -261,7 +262,7 @@ function go(p){window.location.hash="#/"+p;return false;}
 function getHashPage(){var h=window.location.hash||"#/mint";return ["mint","staking","market","swap"].indexOf(h.replace("#/","").split("?")[0])>=0?h.replace("#/","").split("?")[0]:"mint";}
 function showPage(page){document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});document.querySelectorAll(".nav a").forEach(function(a){a.classList.remove("active")});var pg=document.getElementById("page-"+page);if(pg)pg.classList.add("active");var nav=document.getElementById("nav-"+page);if(nav)nav.classList.add("active");}
 window.addEventListener("hashchange",function(){showPage(getHashPage())});
-window.addEventListener("DOMContentLoaded",function(){showPage(getHashPage());});
+showPage(getHashPage());
 window.addEventListener("load",function(){setTimeout(function(){document.getElementById("loading").classList.add("hidden");initContracts();autoConnect();},300);});
 
 function getP(){if(!provider)provider=new ethers.JsonRpcProvider(RPC);return provider;}
