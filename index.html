@@ -386,11 +386,11 @@ async function connect(){
     contracts.dex=contracts.dex.connect(signer);
     contracts.usdc=contracts.usdc.connect(signer);
     // Enable buttons
-    document.getElementById("btn-mint").disabled=false;
-    document.getElementById("btn-list").disabled=false;
-    document.getElementById("btn-unlist").disabled=false;
-    document.getElementById("btn-swap").disabled=false;
-    document.getElementById("btn-transfer").disabled=false;
+    // Enable buttons (null-safe)
+    ["btn-mint","btn-list","btn-swap","btn-transfer"].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.disabled=false;
+    });
     if(ok)document.getElementById("net-badge").style.display="none";
     else{document.getElementById("net-badge").style.display="inline";document.getElementById("net-badge").textContent="Switch Network";}
     txLog("Connected: "+wallet.slice(0,10)+"...","ok");
@@ -405,7 +405,10 @@ function disconnect(){
   document.getElementById("net-badge").style.display="none";
   document.getElementById("btn-conn").style.display="inline-block";
   document.getElementById("btn-disc").style.display="none";
-  ["btn-mint","btn-list","btn-unlist","btn-swap","btn-claim","btn-stake","btn-unstake"].forEach(function(id){document.getElementById(id).disabled=true;});
+  ["btn-mint","btn-list","btn-swap","btn-claim","btn-stake","btn-unstake","btn-transfer"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.disabled=true;
+  });
   initContracts();
   txLog("Disconnected","info");
 }
