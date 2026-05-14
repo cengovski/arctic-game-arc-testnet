@@ -505,10 +505,16 @@ async function loadStaking(){
     var pending=await contracts.staking.pendingRewards(wallet);
     var base=await contracts.staking.baseRewardPerHour();
     var totalPower=0;
+    var stakedDetails=[];
     for(var i=0;i<sNFTs.length;i++){
       var pw=await contracts.staking.getStakingPower(sNFTs[i]);
       totalPower+=Number(pw);
+      // Read rarity from NFT contract
+      var rarity=1;
+      try{rarity=Number(await contracts.beasts.tokenRarity(sNFTs[i]));}catch(e){}
+      stakedDetails.push({id:sNFTs[i].toString(),rarity:rarity});
     }
+    sNFTs=stakedDetails;
     document.getElementById("s-power").textContent=totalPower;
     document.getElementById("s-pending").textContent=ethers.formatEther(pending);
     var day=Number(ethers.formatEther(base))*24*(totalPower/Math.max(sNFTs.length,1));
@@ -524,17 +530,16 @@ function renderStaking(){
   var wEl=document.getElementById("s-wallet");
   wEl.innerHTML="";
   wNFTs.forEach(function(n){
-    if(sNFTs.indexOf(n.id)<0){
+    var isStaked=sNFTs.find(function(s){return s.id===n.id;});
+    if(!isStaked){
       wEl.innerHTML+=nftCard(n.id,n.rarity,false,"toggleWSel(this,"+n.id+")");
     }
   });
   // Staked beasts
   var sEl=document.getElementById("s-staked");
   sEl.innerHTML="";
-  sNFTs.forEach(function(id){
-    var n=wNFTs.find(function(x){return x.id===id;});
-    var rarity=n?n.rarity:1;
-    sEl.innerHTML+=nftCard(id,rarity,true,"toggleSSel(this,"+id+")");
+  sNFTs.forEach(function(n){
+    sEl.innerHTML+=nftCard(n.id,n.rarity,true,"toggleSSel(this,"+n.id+")");
   });
 }
 function toggleWSel(el,id){
