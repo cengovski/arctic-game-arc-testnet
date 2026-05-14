@@ -262,7 +262,7 @@ var C={
   token:"0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf",
   beasts:"0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E",
   staking:"0xDA5028280f3396a2990fb5582434B0EE7030E84a",
-  market:"0xA9bfe3b282d7925c83Bb1a5871f64FdDD9A8A43c",
+  market:"0xBBE1a3D3dd36d31C0b4277d107180851CB67dEfC",
   dex:"0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4",
   usdc:"0x3600000000000000000000000000000000000000"
 };
@@ -285,7 +285,7 @@ var mkFilter="all",mkSort="cheap";
 var A20=["function balanceOf(address) view returns (uint256)","function approve(address,uint256) returns (bool)","function allowance(address,address) view returns (uint256)","function decimals() view returns (uint8)","function transfer(address,uint256) returns (bool)"];
 var AB=["function mint(uint256)","function balanceOf(address) view returns (uint256)","function tokenOfOwnerByIndex(address,uint256) view returns (uint256)","function tokenRarity(uint256) view returns (uint8)","function getStakingPower(uint256) view returns (uint256)","function totalSupply() view returns (uint256)","function ownerOf(uint256) view returns (address)","function isApprovedForAll(address,address) view returns (bool)","function setApprovalForAll(address,bool)"];
 var AS=["function stake(uint256[])","function unstake(uint256[])","function claim()","function getStakedTokens(address) view returns (uint256[])","function pendingRewards(address) view returns (uint256)","function baseRewardPerHour() view returns (uint256)","function getStakingPower(uint256) view returns (uint256)"];
-var AM=["function list(uint256,uint256)","function buy(uint256)","function cancel(uint256)","function getListing(uint256) view returns (address,uint256,uint256,bool)","function listingCount() view returns (uint256)"];
+var AM=["function list(uint256,uint256)","function buy(uint256)","function cancel(uint256)","function getListing(uint256) view returns (address,uint256,uint256,bool)","function getActiveListings() view returns (tuple(address seller,uint256 tokenId,uint256 price,bool active)[])","function getActiveListingIds() view returns (uint256[])","function listingCount() view returns (uint256)"];
 var AD=["function swapUSDCToARCTIC(uint256,uint256)","function swapARCTICToUSDC(uint256,uint256)","function getOutputAmount(uint256,bool) view returns (uint256)","function getPoolInfo() view returns (uint256,uint256,uint256,uint256)","function addLiquidity(uint256,uint256) returns (uint256)","function removeLiquidity(uint256) returns (uint256,uint256)","function getRemoveAmount(uint256) view returns (uint256,uint256)","function lpBalances(address) view returns (uint256)","function totalLPSupply() view returns (uint256)"];
 
 // ==================== NAVIGATION ====================
@@ -607,22 +607,21 @@ async function claim(){
 async function loadMarket(){
   if(!wallet)return;
   try{
-    var count=await contracts.market.listingCount();
+    // Use getActiveListings() — returns all active listings in one call
+    var activeListings=await contracts.market.getActiveListings();
     allListings=[];
     var mine=0;
-    for(var i=0;i<Number(count);i++){
-      try{
-        var listing=await contracts.market.getListing(i);
-        if(listing[3]){ // active
-          var seller=listing[0];
-          var tokenId=listing[1].toString();
-          var price=listing[2];
-          var rarity=1;
-          try{rarity=Number(await contracts.beasts.tokenRarity(tokenId));}catch(e){}
-          allListings.push({idx:i,tokenId:tokenId,seller:seller,price:ethers.formatEther(price),rarity:rarity});
-          if(seller.toLowerCase()===wallet.toLowerCase())mine++;
-        }
-      }catch(e){}
+    for(var i=0;i<activeListings.length;i++){
+      var l=activeListings[i];
+      if(l[3]){ // active
+        var seller=l[0];
+        var tokenId=l[1].toString();
+        var price=l[2];
+        var rarity=1;
+        try{rarity=Number(await contracts.beasts.tokenRarity(tokenId));}catch(e){}
+        allListings.push({idx:i,tokenId:tokenId,seller:seller,price:ethers.formatEther(price),rarity:rarity});
+        if(seller.toLowerCase()===wallet.toLowerCase())mine++;
+      }
     }
     document.getElementById("mk-total").textContent=allListings.length;
     document.getElementById("mk-mine").textContent=mine;
@@ -632,6 +631,32 @@ async function loadMarket(){
     renderMarketWallet();
   }catch(e){
     txLog("Market load: "+e.message,"err");
+    // Fallback: try old method
+    try{
+      var count=await contracts.market.listingCount();
+      allListings=[];
+      var mine=0;
+      for(var i=0;i<Number(count);i++){
+        try{
+          var listing=await contracts.market.getListing(i);
+          if(listing[3]){
+            var seller=listing[0];
+            var tokenId=listing[1].toString();
+            var price=listing[2];
+            var rarity=1;
+            try{rarity=Number(await contracts.beasts.tokenRarity(tokenId));}catch(e){}
+            allListings.push({idx:i,tokenId:tokenId,seller:seller,price:ethers.formatEther(price),rarity:rarity});
+            if(seller.toLowerCase()===wallet.toLowerCase())mine++;
+          }
+        }catch(e){}
+      }
+      document.getElementById("mk-total").textContent=allListings.length;
+      document.getElementById("mk-mine").textContent=mine;
+      renderMarket();
+      renderMarketWallet();
+    }catch(e2){
+      txLog("Market fallback: "+e2.message,"err");
+    }
   }
 }
 function renderMarket(){
@@ -665,10 +690,23 @@ function renderMarketWallet(){
   var el=document.getElementById("mk-wallet");
   el.innerHTML="";
   wNFTs.forEach(function(n){
-    // Only show NFTs not already listed
     var listed=allListings.find(function(l){return l.tokenId===n.id;});
     if(!listed){
       el.innerHTML+=nftCard(n.id,n.rarity,false,"toggleMkSel(this,"+n.id+")");
+    }
+  });
+  // Show listed NFTs with price badge
+  allListings.forEach(function(l){
+    if(l.seller.toLowerCase()===wallet.toLowerCase()){
+      var n=wNFTs.find(function(x){return x.id===l.tokenId;});
+      var rarity=n?n.rarity:1;
+      el.innerHTML+="<div class='nft-card' style='border-color:var(--success);opacity:0.7' data-id='"+l.tokenId+"'>"+
+        "<div class='nft-icon'>"+RICON[rarity]+"</div>"+
+        "<div class='nft-name'>"+RNAME[rarity]+"</div>"+
+        "<div class='nft-id'>#"+l.tokenId+"</div>"+
+        "<div style='color:var(--success);font-size:.6rem;font-weight:700'>"+parseFloat(l.price).toFixed(3)+" ARCTIC</div>"+
+        "<span class='rarity-badge "+RCLASS[rarity]+"' style='font-size:.45rem'>"+RARITY[rarity]+"</span>"+
+        "<div style='font-size:.5rem;color:var(--success)'>LISTED</div></div>";
     }
   });
 }
@@ -725,8 +763,11 @@ async function unlistNFT(){
   if(!mkSel.length)return;
   try{
     for(var i=0;i<mkSel.length;i++){
+      // Find the listing index for this tokenId
+      var listing=allListings.find(function(l){return l.tokenId===mkSel[i];});
+      if(!listing){txLog("No listing for #"+mkSel[i],"err");continue;}
       txLog("Unlisting #"+mkSel[i]+"...","pending");
-      var tx=await contracts.market.cancel(mkSel[i]);
+      var tx=await contracts.market.cancel(listing.idx);
       await tx.wait();
       txLog("Unlisted #"+mkSel[i],"ok",tx.hash);
     }
