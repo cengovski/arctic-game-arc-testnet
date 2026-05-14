@@ -10,1126 +10,964 @@
 :root{
   --bg:#0a0e1a;--card:#111827;--border:#1e293b;--primary:#3b82f6;
   --success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--text:#e2e8f0;
-  --muted:#64748b;
+  --muted:#64748b;--ice:#a5f3fc;--frost:#67e8f9;
 }
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.header{background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
-.header h1{font-size:1.4rem;background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.wallet-info{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.btn{padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all .2s}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0c4a6e 100%);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.header h1{font-size:1.3rem;background:linear-gradient(90deg,#60a5fa,#a5f3fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer}
+.header h1:hover{opacity:.8}
+.wallet-info{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{padding:7px 14px;border:none;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:all .2s}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-success{background:var(--success);color:#fff}
 .btn-warning{background:var(--warning);color:#000}
 .btn-danger{background:var(--danger);color:#fff}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.btn-connect{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;padding:10px 20px;font-size:.9rem}
-.btn-sm{padding:4px 10px;font-size:.7rem}
-.tabs{display:flex;gap:4px;padding:12px 24px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
-.tab{padding:10px 20px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted);transition:all .2s;white-space:nowrap;border:none;background:transparent}
-.tab.active{background:var(--primary);color:#fff}
-.tab:hover:not(.active){background:var(--border);color:var(--text)}
-.content{padding:24px;max-width:1200px;margin:0 auto}
-.panel{display:none}
-.panel.active{display:block}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
-.card h3{margin-bottom:12px;font-size:1rem;color:var(--text)}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
-.stat-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
-.stat-box .value{font-size:1.2rem;font-weight:700;color:var(--primary)}
-.stat-box .label{font-size:.7rem;color:var(--muted);margin-top:4px}
-.input-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-.input-row input,.input-row select{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.85rem;outline:none}
-.input-row input:focus,.input-row select:focus{border-color:var(--primary)}
-.input-row input::placeholder{color:var(--muted)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.btn-connect{background:linear-gradient(135deg,#0ea5e9,#3b82f6);color:#fff;padding:9px 18px;font-size:.85rem}
+.btn-sm{padding:3px 8px;font-size:.65rem}
 
-/* NFT Cards - Compact Icon Mode */
-.nft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin:12px 0}
-.nft-card{background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;transition:all .2s;text-align:center;position:relative}
-.nft-card:hover{border-color:var(--primary);transform:scale(1.05)}
-.nft-card.selected{border-color:var(--success);box-shadow:0 0 12px rgba(34,197,94,.4)}
+/* NAV */
+.nav{display:flex;gap:2px;padding:10px 24px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
+.nav a{padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:600;color:var(--muted);text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav a.active{background:linear-gradient(135deg,#0ea5e9,#3b82f6);color:#fff}
+.nav a:hover:not(.active){background:var(--border);color:var(--text)}
+
+/* PAGE */
+.page{display:none;padding:20px;max-width:1100px;margin:0 auto}
+.page.active{display:block}
+.page-title{font-size:1.3rem;margin-bottom:16px;background:linear-gradient(90deg,#60a5fa,#a5f3fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.card h3{margin-bottom:10px;font-size:.95rem}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.stat-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.stat-box .value{font-size:1.1rem;font-weight:700;color:var(--ice)}
+.stat-box .label{font-size:.65rem;color:var(--muted);margin-top:3px}
+.input-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.input-row input,.input-row select{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:.8rem;outline:none}
+.input-row input:focus{border-color:var(--primary)}
+
+/* NFT CARDS - Arctic Theme */
+.nft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin:10px 0}
+.nft-card{background:linear-gradient(145deg,var(--bg),#0f172a);border:2px solid var(--border);border-radius:12px;padding:8px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden}
+.nft-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--ice),transparent);opacity:0;transition:opacity .2s}
+.nft-card:hover::before{opacity:1}
+.nft-card:hover{border-color:var(--ice);transform:scale(1.04);box-shadow:0 0 15px rgba(165,243,252,.15)}
+.nft-card.selected{border-color:var(--success);box-shadow:0 0 12px rgba(34,197,94,.35)}
 .nft-card.staked{border-color:var(--warning)}
-.nft-card .nft-emoji{font-size:1.8rem;line-height:1;margin:2px 0}
-.nft-card .nft-id{font-size:.6rem;color:var(--muted)}
-.nft-card .nft-power{font-size:.55rem;color:var(--warning)}
-.nft-card .select-check{position:absolute;top:2px;right:4px;font-size:.7rem;display:none}
-.nft-card.selected .select-check{display:block}
+.nft-card .nft-icon{font-size:2rem;line-height:1.1;margin:3px 0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+.nft-card .nft-name{font-size:.6rem;font-weight:700;color:var(--ice);margin:2px 0;text-transform:uppercase;letter-spacing:.3px}
+.nft-card .nft-id{font-size:.55rem;color:var(--muted)}
+.nft-card .nft-power{font-size:.55rem;color:var(--warning);margin-top:1px}
+.nft-card .check{position:absolute;top:3px;right:5px;font-size:.7rem;display:none;color:var(--success)}
+.nft-card.selected .check{display:block}
 
-.rarity-badge{display:inline-block;padding:2px 6px;border-radius:8px;font-size:.6rem;font-weight:700;text-transform:uppercase}
-.rarity-common{background:rgba(148,163,184,.2);color:#94a3b8}
-.rarity-rare{background:rgba(59,130,246,.2);color:#3b82f6}
-.rarity-epic{background:rgba(168,85,27,.2);color:#a855f7}
-.rarity-legendary{background:rgba(245,158,11,.2);color:#f59e0b}
+.rarity-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:.55rem;font-weight:700;text-transform:uppercase}
+.rarity-common{background:rgba(148,163,184,.15);color:#94a3b8}
+.rarity-rare{background:rgba(59,130,246,.15);color:#60a5fa}
+.rarity-epic{background:rgba(168,85,247,.15);color:#c084fc}
+.rarity-legendary{background:rgba(245,158,11,.15);color:#fbbf24}
 
-.stake-actions{display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap}
-.log{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:250px;overflow-y:auto;font-family:monospace;font-size:.72rem}
-.log .ok{color:var(--success)}
-.log .err{color:var(--danger)}
-.log .info{color:var(--primary)}
-.log .tx{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid var(--border)}
+.stake-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+
+/* LOG */
+.log{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;max-height:200px;overflow-y:auto;font-family:monospace;font-size:.7rem}
+.log .tx{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
 .log .tx:last-child{border-bottom:none}
-.log .tx-status{font-weight:700;padding:1px 6px;border-radius:4px;font-size:.6rem}
-.log .tx-status.ok{background:rgba(34,197,94,.2);color:var(--success)}
-.log .tx-status.fail{background:rgba(239,68,68,.2);color:var(--danger)}
-.log .tx-status.pending{background:rgba(59,130,246,.2);color:var(--primary)}
+.badge{padding:1px 5px;border-radius:3px;font-size:.55rem;font-weight:700}
+.badge.ok{background:rgba(34,197,94,.15);color:var(--success)}
+.badge.fail{background:rgba(239,68,68,.15);color:var(--danger)}
+.badge.pending{background:rgba(59,130,246,.15);color:var(--primary)}
 
+/* LOADING */
 .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .3s}
 .loading-overlay.hidden{opacity:0;pointer-events:none;z-index:-1}
-.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--ice);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.swap-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px}
-.swap-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.swap-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:.95rem;outline:none}
-.swap-row input:focus{border-color:var(--primary)}
-.swap-arrow{text-align:center;font-size:1.3rem;color:var(--muted);cursor:pointer;padding:4px}
-.swap-arrow:hover{color:var(--primary)}
-.price-info{font-size:.75rem;color:var(--muted);text-align:center;margin:6px 0}
-.slippage-row{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:6px}
-.slippage-row label{font-size:.75rem;color:var(--muted)}
-
-.market-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-.market-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
-.market-item .price{color:var(--success);font-weight:700;font-size:1rem;margin:6px 0}
-.market-item .seller{font-size:.65rem;color:var(--muted);margin:2px 0}
-
-.pct-btns{display:flex;gap:4px;margin:6px 0}
-.pct-btns .btn{flex:1;padding:4px;font-size:.65rem}
-
-.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
-.filter-row .btn.active-filter{background:var(--primary);color:#fff}
-
-.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:.85rem;font-weight:600;z-index:10000;animation:slideIn .3s}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:.8rem;font-weight:600;z-index:10000;animation:slideIn .3s}
 .toast.success{background:var(--success);color:#fff}
 .toast.error{background:var(--danger);color:#fff}
 .toast.info{background:var(--primary);color:#fff}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-.tx-toast{position:fixed;top:70px;right:24px;padding:10px 16px;border-radius:8px;font-size:.8rem;font-weight:600;z-index:10000;min-width:200px;animation:slideIn .3s}
-.tx-toast.pending{background:var(--primary);color:#fff}
-.tx-toast.success{background:var(--success);color:#fff}
-.tx-toast.fail{background:var(--danger);color:#fff}
-.tx-toast a{color:#fff;text-decoration:underline;margin-left:8px}
+/* SWAP */
+.swap-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px}
+.swap-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.swap-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-size:.9rem;outline:none}
+.swap-row input:focus{border-color:var(--primary)}
+.swap-arrow{text-align:center;font-size:1.2rem;color:var(--muted);cursor:pointer;padding:3px}
+.swap-arrow:hover{color:var(--ice)}
+.price-info{font-size:.7rem;color:var(--muted);text-align:center;margin:5px 0}
+.slippage-row{display:flex;gap:5px;align-items:center;justify-content:center;margin-top:5px}
+.slippage-row label{font-size:.7rem;color:var(--muted)}
+.pct-btns{display:flex;gap:3px;margin:5px 0}
+.pct-btns .btn{flex:1;padding:3px;font-size:.6rem}
+
+/* MARKET */
+.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.market-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.market-item .price{color:var(--success);font-weight:700;font-size:.9rem;margin:4px 0}
+.market-item .seller{font-size:.6rem;color:var(--muted)}
+.filter-row{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
+.filter-row .btn.active-filter{background:var(--primary);color:#fff}
+
+/* MINT LIMIT */
+.mint-limit-bar{background:var(--bg);border-radius:6px;height:6px;margin:8px 0;overflow:hidden}
+.mint-limit-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--ice));border-radius:6px;transition:width .3s}
+.mint-limit-text{font-size:.65rem;color:var(--muted);text-align:right}
 </style>
 </head>
 <body>
 
 <div id="loading" class="loading-overlay"><div class="spinner"></div></div>
-<div id="tx-toast" class="tx-toast" style="display:none"></div>
 
 <div class="header">
-  <h1>❄️ Arctic Game</h1>
+  <h1 onclick="navigateTo('mint')">❄️ Arctic Game</h1>
   <div class="wallet-info">
-    <span id="network-badge" style="font-size:.7rem;padding:2px 8px;border-radius:12px;background:var(--danger);color:#fff;display:none">Wrong Network</span>
-    <span id="wallet-address" style="font-size:.8rem;color:var(--muted)"></span>
-    <button id="btn-connect" class="btn btn-connect" onclick="connectWallet()">Connect Wallet</button>
-    <button id="btn-disconnect" class="btn btn-danger" onclick="disconnectWallet()" style="display:none">Disconnect</button>
+    <span id="net-badge" style="font-size:.65rem;padding:2px 6px;border-radius:8px;background:var(--danger);color:#fff;display:none">Wrong Network</span>
+    <span id="addr" style="font-size:.75rem;color:var(--muted)"></span>
+    <button id="btn-conn" class="btn btn-connect" onclick="connectWallet()">Connect</button>
+    <button id="btn-disc" class="btn btn-danger" onclick="disconnect()" style="display:none">Disconnect</button>
   </div>
 </div>
 
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('mint')" id="tab-mint">🎲 Mint</button>
-  <button class="tab" onclick="switchTab('stake')" id="tab-stake">⛏️ Stake</button>
-  <button class="tab" onclick="switchTab('market')" id="tab-market">🏪 Market</button>
-  <button class="tab" onclick="switchTab('swap')" id="tab-swap">💱 Swap</button>
-  <button class="tab" onclick="switchTab('stats')" id="tab-stats">📊 Stats</button>
+<div class="nav" id="nav">
+  <a href="#/mint" id="nav-mint">🎲 Mint</a>
+  <a href="#/staking" id="nav-staking">⛏️ Staking</a>
+  <a href="#/market" id="nav-market">🏪 Market</a>
+  <a href="#/swap" id="nav-swap">💱 Swap</a>
 </div>
 
-<div class="content">
-
-  <!-- MINT -->
-  <div id="panel-mint" class="panel active">
-    <div class="card">
-      <h3>🎲 Mint Arctic Beasts NFTs</h3>
-      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Free mint! Each beast has a random rarity.</p>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="value" id="mint-supply">—</div><div class="label">Total Minted</div></div>
-        <div class="stat-box"><div class="value">10000</div><div class="label">Max Supply</div></div>
-        <div class="stat-box"><div class="value" id="mint-balance">—</div><div class="label">Your NFTs</div></div>
-      </div>
-      <div class="input-row">
-        <input type="number" id="mint-qty" value="1" min="1" max="10" style="width:80px">
-        <button class="btn btn-primary" id="btn-mint" onclick="mintNFTs()" disabled>Mint (Free)</button>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-        <span class="rarity-badge rarity-common">Common 60% (1x)</span>
-        <span class="rarity-badge rarity-rare">Rare 25% (3x)</span>
-        <span class="rarity-badge rarity-epic">Epic 12% (8x)</span>
-        <span class="rarity-badge rarity-legendary">Legendary 3% (20x)</span>
-      </div>
+<!-- MINT PAGE -->
+<div id="page-mint" class="page active">
+  <div class="page-title">🎲 Mint Arctic Beasts</div>
+  <div class="card">
+    <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Free mint! Max 10 per wallet. Each beast gets a random Arctic creature.</p>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="value" id="m-supply">—</div><div class="label">Total Minted</div></div>
+      <div class="stat-box"><div class="value">10,000</div><div class="label">Max Supply</div></div>
+      <div class="stat-box"><div class="value" id="m-minted">0</div><div class="label">You Minted</div></div>
+      <div class="stat-box"><div class="value" id="m-remaining">10</div><div class="label">Remaining</div></div>
     </div>
-    <div class="card">
-      <h3>🖼️ Your Minted Beasts</h3>
-      <div id="mint-nft-list" class="nft-grid"></div>
+    <div class="mint-limit-bar"><div class="mint-limit-fill" id="m-bar" style="width:0%"></div></div>
+    <div class="mint-limit-text" id="m-limit-text">0 / 10 minted</div>
+    <div class="input-row" style="margin-top:10px">
+      <input type="number" id="m-qty" value="1" min="1" max="10" style="width:70px">
+      <button class="btn btn-primary" id="btn-mint" onclick="mint()" disabled>Mint (Free)</button>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">
+      <span class="rarity-badge rarity-common">Common 60%</span>
+      <span class="rarity-badge rarity-rare">Rare 25%</span>
+      <span class="rarity-badge rarity-epic">Epic 12%</span>
+      <span class="rarity-badge rarity-legendary">Legendary 3%</span>
     </div>
   </div>
+  <div class="card">
+    <h3>🖼️ Your Beasts</h3>
+    <div id="m-list" class="nft-grid"></div>
+  </div>
+</div>
 
-  <!-- STAKE -->
-  <div id="panel-stake" class="panel">
-    <div class="card">
-      <h3>⛏️ Stake Your Beasts</h3>
-      <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Stake NFTs to earn ARCTIC. Unstake auto-claims rewards.</p>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="value" id="stake-power">0</div><div class="label">Your Power</div></div>
-        <div class="stat-box"><div class="value" id="stake-pending">0</div><div class="label">Pending ARCTIC</div></div>
-        <div class="stat-box"><div class="value" id="stake-day">0</div><div class="label">Est. ARCTIC/day</div></div>
-        <div class="stat-box"><div class="value" id="stake-count">0</div><div class="label">Staked / Wallet</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <h3>🎒 Wallet Beasts <span style="font-size:.7rem;color:var(--muted)">(tap to select)</span></h3>
-      <div id="stake-wallet-list" class="nft-grid"></div>
-      <div class="stake-actions">
-        <button class="btn btn-success" id="btn-stake" onclick="stakeSelected()" disabled>⬇️ Stake Selected</button>
-      </div>
-    </div>
-    <div class="card">
-      <h3>🔒 Staked Beasts <span style="font-size:.7rem;color:var(--muted)">(tap to select for unstake)</span></h3>
-      <div id="stake-staked-list" class="nft-grid"></div>
-      <div class="stake-actions">
-        <button class="btn btn-warning" id="btn-unstake" onclick="unstakeSelected()" disabled>⬆️ Unstake (+ Claim)</button>
-        <button class="btn btn-primary" id="btn-claim" onclick="claimRewards()" disabled>🎁 Claim Only</button>
-      </div>
+<!-- STAKING PAGE -->
+<div id="page-staking" class="page">
+  <div class="page-title">⛏️ Staking</div>
+  <div class="card">
+    <p style="color:var(--muted);font-size:.8rem;margin-bottom:10px">Stake NFTs to earn ARCTIC. Unstake auto-claims rewards.</p>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="value" id="s-power">0</div><div class="label">Your Power</div></div>
+      <div class="stat-box"><div class="value" id="s-pending">0</div><div class="label">Pending ARCTIC</div></div>
+      <div class="stat-box"><div class="value" id="s-day">0</div><div class="label">Est. ARCTIC/day</div></div>
+      <div class="stat-box"><div class="value" id="s-count">0/0</div><div class="label">Staked / Wallet</div></div>
     </div>
   </div>
-
-  <!-- MARKET -->
-  <div id="panel-market" class="panel">
-    <div class="card">
-      <h3>🏪 NFT Marketplace</h3>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="value" id="market-total">0</div><div class="label">Active Listings</div></div>
-        <div class="stat-box"><div class="value" id="market-floor">—</div><div class="label">Floor (ARCTIC)</div></div>
-        <div class="stat-box"><div class="value" id="market-mine">0</div><div class="label">Your Listings</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <h3>📋 Listings</h3>
-      <div class="filter-row">
-        <span style="font-size:.75rem;color:var(--muted)">Filter:</span>
-        <button class="btn btn-sm btn-primary active-filter" onclick="setMarketFilter('all')" id="filter-all">All</button>
-        <button class="btn btn-sm" onclick="setMarketFilter('common')" id="filter-common">Common</button>
-        <button class="btn btn-sm" onclick="setMarketFilter('rare')" id="filter-rare">Rare</button>
-        <button class="btn btn-sm" onclick="setMarketFilter('epic')" id="filter-epic">Epic</button>
-        <button class="btn btn-sm" onclick="setMarketFilter('legendary')" id="filter-legendary">Legendary</button>
-        <button class="btn btn-sm" onclick="setMarketFilter('mine')" id="filter-mine">My Listings</button>
-      </div>
-      <div id="market-listings" class="market-list"></div>
-    </div>
-    <div class="card">
-      <h3>💰 List / Unlist</h3>
-      <div class="input-row">
-        <input type="number" id="list-token-id" placeholder="Token ID" style="width:100px">
-        <input type="number" id="list-price" placeholder="Price (ARCTIC)" style="width:120px">
-        <button class="btn btn-primary" id="btn-list" onclick="listNFT()" disabled>List</button>
-        <button class="btn btn-danger" id="btn-unlist" onclick="unlistNFT()" disabled>Unlist</button>
-      </div>
-      <div id="my-listings" style="margin-top:10px;font-size:.75rem;color:var(--muted)"></div>
+  <div class="card">
+    <h3>🎒 Wallet Beasts <span style="font-size:.65rem;color:var(--muted)">(tap to stake)</span></h3>
+    <div id="s-wallet" class="nft-grid"></div>
+    <div class="stake-actions">
+      <button class="btn btn-success" id="btn-stake" onclick="stakeSel()" disabled>⬇️ Stake Selected</button>
     </div>
   </div>
-
-  <!-- SWAP -->
-  <div id="panel-swap" class="panel">
-    <div class="card">
-      <h3>💱 Swap USDC ↔ ARCTIC</h3>
-      <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">ArcticDEX V2 — 0.3% fee.</p>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="value" id="dex-usdc-pool">—</div><div class="label">USDC Pool</div></div>
-        <div class="stat-box"><div class="value" id="dex-arctic-pool">—</div><div class="label">ARCTIC Pool</div></div>
-        <div class="stat-box"><div class="value" id="dex-price">—</div><div class="label">1 USDC = ? ARCTIC</div></div>
-        <div class="stat-box"><div class="value" id="dex-lp-balance">—</div><div class="label">Your LP</div></div>
-      </div>
-      <div class="swap-box">
-        <div class="swap-row">
-          <div style="flex:1">
-            <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">From</div>
-            <input type="number" id="swap-amount" placeholder="0.0" step="0.01">
-          </div>
-          <select id="swap-from" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text)">
-            <option value="usdc">USDC</option>
-            <option value="arctic">ARCTIC</option>
-          </select>
-        </div>
-        <div class="swap-arrow" onclick="swapDirection()">⇅</div>
-        <div class="swap-row">
-          <div style="flex:1">
-            <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">To (est.)</div>
-            <input type="text" id="swap-output" placeholder="0.0" readonly>
-          </div>
-          <select id="swap-to" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text)">
-            <option value="arctic">ARCTIC</option>
-            <option value="usdc">USDC</option>
-          </select>
-        </div>
-        <div class="price-info" id="swap-price-info"></div>
-        <div class="price-info" id="swap-min-received" style="color:var(--warning)"></div>
-        <div class="slippage-row">
-          <label>Slippage:</label>
-          <select id="slippage" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--text);font-size:.8rem">
-            <option value="0.5">0.5%</option>
-            <option value="1" selected>1%</option>
-            <option value="2">2%</option>
-            <option value="5">5%</option>
-          </select>
-        </div>
-        <div style="text-align:center;margin-top:10px">
-          <button class="btn btn-primary" id="btn-swap" onclick="executeSwap()" disabled style="width:100%;padding:12px">Swap</button>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <h3>🏊 Liquidity Pool</h3>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="value" id="dex-total-lp">—</div><div class="label">Total LP</div></div>
-        <div class="stat-box"><div class="value" id="dex-lp-share">—</div><div class="label">Your Share</div></div>
-        <div class="stat-box"><div class="value" id="dex-my-usdc">—</div><div class="label">Your USDC</div></div>
-        <div class="stat-box"><div class="value" id="dex-my-arctic">—</div><div class="label">Your ARCTIC</div></div>
-      </div>
-      <div class="swap-box">
-        <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px">Add Liquidity</div>
-        <div class="swap-row">
-          <input type="number" id="liq-usdc" placeholder="USDC" step="0.1">
-          <input type="number" id="liq-arctic" placeholder="ARCTIC" step="1">
-        </div>
-        <div class="pct-btns">
-          <button class="btn btn-primary" onclick="setLiqPct(25)">25%</button>
-          <button class="btn btn-primary" onclick="setLiqPct(50)">50%</button>
-          <button class="btn btn-primary" onclick="setLiqPct(75)">75%</button>
-          <button class="btn btn-success" onclick="setLiqPct(100)">MAX</button>
-          <button class="btn btn-success" onclick="addLiquidity()">+ Add</button>
-        </div>
-        <div style="font-size:.75rem;color:var(--muted);margin:10px 0 6px">Remove Liquidity</div>
-        <div class="swap-row">
-          <input type="number" id="liq-lp" placeholder="LP tokens" step="0.0001" style="flex:1">
-        </div>
-        <div class="pct-btns">
-          <button class="btn btn-warning" onclick="setRemovePct(25)">25%</button>
-          <button class="btn btn-warning" onclick="setRemovePct(50)">50%</button>
-          <button class="btn btn-warning" onclick="setRemovePct(75)">75%</button>
-          <button class="btn btn-danger" onclick="setRemovePct(100)">MAX</button>
-          <button class="btn btn-danger" onclick="removeLiquidity()">- Remove</button>
-        </div>
-        <div class="price-info" id="liq-preview"></div>
-      </div>
+  <div class="card">
+    <h3>🔒 Staked <span style="font-size:.65rem;color:var(--muted)">(tap to unstake)</span></h3>
+    <div id="s-staked" class="nft-grid"></div>
+    <div class="stake-actions">
+      <button class="btn btn-warning" id="btn-unstake" onclick="unstakeSel()" disabled>⬆️ Unstake (+ Claim)</button>
+      <button class="btn btn-primary" id="btn-claim" onclick="claim()" disabled>🎁 Claim Only</button>
     </div>
   </div>
+</div>
 
-  <!-- STATS -->
-  <div id="panel-stats" class="panel">
-    <div class="card">
-      <h3>📊 Your Stats</h3>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="value" id="stat-supply">—</div><div class="label">Total NFTs</div></div>
-        <div class="stat-box"><div class="value" id="stat-staked">—</div><div class="label">Your Staked</div></div>
-        <div class="stat-box"><div class="value" id="stat-usdc">—</div><div class="label">Your USDC</div></div>
-        <div class="stat-box"><div class="value" id="stat-arctic">—</div><div class="label">Your ARCTIC</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <h3>📜 Transaction Log</h3>
-      <div id="tx-log" class="log"></div>
+<!-- MARKET PAGE -->
+<div id="page-market" class="page">
+  <div class="page-title">🏪 Marketplace</div>
+  <div class="card">
+    <div class="stat-grid">
+      <div class="stat-box"><div class="value" id="mk-total">0</div><div class="label">Active Listings</div></div>
+      <div class="stat-box"><div class="value" id="mk-floor">—</div><div class="label">Floor (ARCTIC)</div></div>
+      <div class="stat-box"><div class="value" id="mk-mine">0</div><div class="label">Your Listings</div></div>
     </div>
   </div>
+  <div class="card">
+    <h3>📋 All Listings</h3>
+    <div class="filter-row">
+      <span style="font-size:.7rem;color:var(--muted)">Filter:</span>
+      <button class="btn btn-sm active-filter" onclick="setFilter('all')" id="f-all">All</button>
+      <button class="btn btn-sm" onclick="setFilter('common')" id="f-common">Common</button>
+      <button class="btn btn-sm" onclick="setFilter('rare')" id="f-rare">Rare</button>
+      <button class="btn btn-sm" onclick="setFilter('epic')" id="f-epic">Epic</button>
+      <button class="btn btn-sm" onclick="setFilter('legendary')" id="f-legendary">Legendary</button>
+      <button class="btn btn-sm" onclick="setFilter('mine')" id="f-mine">Mine</button>
+    </div>
+    <div id="mk-list" class="market-grid"></div>
+  </div>
+  <div class="card">
+    <h3>💰 List / Unlist Your Beast</h3>
+    <p style="color:var(--muted);font-size:.7rem;margin-bottom:8px">Select from your wallet beasts below, set price, and list.</p>
+    <div id="mk-wallet" class="nft-grid" style="margin-bottom:10px"></div>
+    <div class="input-row">
+      <input type="number" id="mk-price" placeholder="Price (ARCTIC)" style="width:110px">
+      <button class="btn btn-primary" id="btn-list" onclick="listNFT()" disabled>List Selected</button>
+      <button class="btn btn-danger" id="btn-unlist" onclick="unlistNFT()" disabled>Unlist</button>
+    </div>
+    <div id="mk-mylistings" style="margin-top:8px;font-size:.7rem;color:var(--muted)"></div>
+  </div>
+</div>
 
+<!-- SWAP PAGE -->
+<div id="page-swap" class="page">
+  <div class="page-title">💱 Swap & Liquidity</div>
+  <div class="card">
+    <h3>💱 Swap USDC ↔ ARCTIC</h3>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="value" id="sw-usdc">—</div><div class="label">USDC Pool</div></div>
+      <div class="stat-box"><div class="value" id="sw-arctic">—</div><div class="label">ARCTIC Pool</div></div>
+      <div class="stat-box"><div class="value" id="sw-price">—</div><div class="label">1 USDC = ? ARCTIC</div></div>
+      <div class="stat-box"><div class="value" id="sw-lp">—</div><div class="label">Your LP</div></div>
+    </div>
+    <div class="swap-box">
+      <div class="swap-row">
+        <div style="flex:1"><div style="font-size:.65rem;color:var(--muted);margin-bottom:3px">From</div>
+          <input type="number" id="sw-amount" placeholder="0.0" step="0.01"></div>
+        <select id="sw-from" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px;color:var(--text)"><option value="usdc">USDC</option><option value="arctic">ARCTIC</option></select>
+      </div>
+      <div class="swap-arrow" onclick="swapDir()">⇅</div>
+      <div class="swap-row">
+        <div style="flex:1"><div style="font-size:.65rem;color:var(--muted);margin-bottom:3px">To (est.)</div>
+          <input type="text" id="sw-out" placeholder="0.0" readonly></div>
+        <select id="sw-to" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px;color:var(--text)"><option value="arctic">ARCTIC</option><option value="usdc">USDC</option></select>
+      </div>
+      <div class="price-info" id="sw-info"></div>
+      <div class="price-info" id="sw-min" style="color:var(--warning)"></div>
+      <div class="slippage-row"><label>Slippage:</label>
+        <select id="sw-slip" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:3px 6px;color:var(--text);font-size:.75rem"><option value="0.5">0.5%</option><option value="1" selected>1%</option><option value="2">2%</option><option value="5">5%</option></select>
+      </div>
+      <div style="text-align:center;margin-top:8px"><button class="btn btn-primary" id="btn-swap" onclick="execSwap()" disabled style="width:100%;padding:10px">Swap</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>🏊 Liquidity Pool</h3>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="value" id="lp-total">—</div><div class="label">Total LP</div></div>
+      <div class="stat-box"><div class="value" id="lp-share">—</div><div class="label">Your Share</div></div>
+      <div class="stat-box"><div class="value" id="lp-usdc">—</div><div class="label">Your USDC</div></div>
+      <div class="stat-box"><div class="value" id="lp-arctic">—</div><div class="label">Your ARCTIC</div></div>
+    </div>
+    <div class="swap-box">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:5px">Add Liquidity</div>
+      <div class="swap-row"><input type="number" id="lp-u" placeholder="USDC" step="0.1"><input type="number" id="lp-a" placeholder="ARCTIC" step="1"></div>
+      <div class="pct-btns"><button class="btn btn-primary" onclick="setLP(25)">25%</button><button class="btn btn-primary" onclick="setLP(50)">50%</button><button class="btn btn-primary" onclick="setLP(75)">75%</button><button class="btn btn-success" onclick="setLP(100)">MAX</button><button class="btn btn-success" onclick="addLP()">+ Add</button></div>
+      <div style="font-size:.7rem;color:var(--muted);margin:8px 0 5px">Remove Liquidity</div>
+      <div class="swap-row"><input type="number" id="lp-r" placeholder="LP tokens" step="0.0001" style="flex:1"></div>
+      <div class="pct-btns"><button class="btn btn-warning" onclick="setRP(25)">25%</button><button class="btn btn-warning" onclick="setRP(50)">50%</button><button class="btn btn-warning" onclick="setRP(75)">75%</button><button class="btn btn-danger" onclick="setRP(100)">MAX</button><button class="btn btn-danger" onclick="remLP()">- Remove</button></div>
+      <div class="price-info" id="lp-preview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOG PAGE (hidden, shown in footer) -->
+<div id="page-log" class="page">
+  <div class="page-title">📜 Transaction Log</div>
+  <div class="card"><div id="log" class="log"></div></div>
 </div>
 
 <script>
-var RPC_URL = 'https://rpc.testnet.arc.network';
-var CHAIN_ID = 5042002;
-var CONTRACTS = {
-  arcticToken: '0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf',
-  arcticBeasts: '0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E',
-  arcticStaking: '0xDA5028280f3396a2990fb5582434B0EE7030E84a',
-  arcticMarket: '0xA9bfe3b282d7925c83Bb1a5871f64FdDD9A8A43c',
-  arcticDEX: '0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4',
-  usdc: '0x3600000000000000000000000000000000000000'
+// ===== CONFIG =====
+var RPC="https://rpc.testnet.arc.network",CHAIN=5042002;
+var C={
+  token:"0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf",
+  beasts:"0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E",
+  staking:"0xDA5028280f3396a2990fb5582434B0EE7030E84a",
+  market:"0xA9bfe3b282d7925c83Bb1a5871f64FdDD9A8A43c",
+  dex:"0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4",
+  usdc:"0x3600000000000000000000000000000000000000"
 };
+var MAX_PER_WALLET=10;
 
-var RARITY_NAMES = ['','Common','Rare','Epic','Legendary'];
-var RARITY_CLASSES = ['','rarity-common','rarity-rare','rarity-epic','rarity-legendary'];
-var RARITY_EMOJIS = ['','🐺','🦅','🐉','👑'];
-var RARITY_BG = ['','#1a1a2e','#0a1628','#1a0a2e','#2e1a0a'];
+// Arctic-themed NFT names per rarity
+var RNAME=["","Common","Rare","Epic","Legendary"];
+var RCLASS=["","rarity-common","rarity-rare","rarity-epic","rarity-legendary"];
+var RICON=["","🐺","🦊","🐻‍❄️","🦌"];
+var RBG=["","#1a1a2e","#0a1628","#1a0a2e","#2e1a0a"];
+var RPOW=[0,1,3,8,20];
 
-var provider, signer, contracts = {};
-var walletAddress = '';
-var myWalletNFTs = [];
-var myStakedNFTs = [];
-var selectedWalletNFTs = [];
-var selectedStakedNFTs = [];
-var allMarketListings = [];
-var marketFilter = 'all';
-var txLogEntries = [];
-
-var ABI_ERC20 = ['function balanceOf(address) view returns (uint256)','function approve(address,uint256) returns (bool)','function allowance(address,address) view returns (uint256)','function decimals() view returns (uint8)'];
-var ABI_BEASTS = [
-  'function mint(uint256)','function balanceOf(address) view returns (uint256)',
-  'function tokenOfOwnerByIndex(address,uint256) view returns (uint256)',
-  'function tokenRarity(uint256) view returns (uint8)',
-  'function getStakingPower(uint256) view returns (uint256)',
-  'function totalSupply() view returns (uint256)',
-  'function ownerOf(uint256) view returns (address)',
-  'function isApprovedForAll(address,address) view returns (bool)',
-  'function setApprovalForAll(address,bool)'
-];
-var ABI_STAKING = [
-  'function stake(uint256[])','function unstake(uint256[])','function claim()',
-  'function getStakedTokens(address) view returns (uint256[])',
-  'function pendingRewards(address) view returns (uint256)',
-  'function totalStakingPower() view returns (uint256)',
-  'function totalStaked() view returns (uint256)',
-  'function baseRewardPerHour() view returns (uint256)',
-  'function getStakeInfo(address) view returns (uint256[],uint256,uint256,uint256)',
-  'function getStakingPower(uint256) view returns (uint256)'
-];
-var ABI_MARKET = [
-  'function list(uint256,uint256)','function buy(uint256)','function cancel(uint256)',
-  'function getListing(uint256) view returns (address,uint256,uint256,bool)',
-  'function listingCount() view returns (uint256)',
-  'function getActiveListings(uint256,uint256) view returns (uint256[],address[],uint256[],uint256[])',
-  'function getActiveListingCount() view returns (uint256)'
-];
-var ABI_DEX = [
-  'function swapUSDCToARCTIC(uint256,uint256)','function swapARCTICToUSDC(uint256,uint256)',
-  'function getOutputAmount(uint256,bool) view returns (uint256)',
-  'function getPoolInfo() view returns (uint256,uint256,uint256,uint256)',
-  'function addLiquidity(uint256,uint256) returns (uint256)',
-  'function removeLiquidity(uint256) returns (uint256,uint256)',
-  'function getRemoveAmount(uint256) view returns (uint256,uint256)',
-  'function lpBalances(address) view returns (uint256)',
-  'function totalLPSupply() view returns (uint256)'
+// Arctic creature names per token (deterministic)
+var CREATURES=[
+  "Frost Wolf","Ice Fox","Snow Owl","Glacier Bear","Arctic Hare",
+  "Tundra Lynx","Polar Seal","Frost Moose","Ice Raven","Snow Leopard",
+  "Glacier Wolf","Arctic Fox","Frost Owl","Ice Bear","Tundra Eagle",
+  "Polar Wolf","Snow Fox","Frost Bear","Ice Moose","Glacier Owl"
 ];
 
-window.addEventListener('load', function() {
-  setTimeout(function() {
-    document.getElementById('loading').classList.add('hidden');
+function creatureName(tokenId){
+  return CREATURES[Number(tokenId)%CREATURES.length];
+}
+
+var provider,signer,contracts={};
+var wallet="";
+var wNFTs=[],sNFTs=[],selW=[],selS=[];
+var allListings=[],mkFilter="all";
+var mintedCount=0;
+
+var A20=["function balanceOf(address) view returns (uint256)","function approve(address,uint256) returns (bool)","function allowance(address,address) view returns (uint256)","function decimals() view returns (uint8)"];
+var ABEASTS=[
+  "function mint(uint256)","function balanceOf(address) view returns (uint256)",
+  "function tokenOfOwnerByIndex(address,uint256) view returns (uint256)",
+  "function tokenRarity(uint256) view returns (uint8)",
+  "function getStakingPower(uint256) view returns (uint256)",
+  "function totalSupply() view returns (uint256)",
+  "function ownerOf(uint256) view returns (address)",
+  "function isApprovedForAll(address,address) view returns (bool)",
+  "function setApprovalForAll(address,bool)"
+];
+var ASTAKE=[
+  "function stake(uint256[])","function unstake(uint256[])","function claim()",
+  "function getStakedTokens(address) view returns (uint256[])",
+  "function pendingRewards(address) view returns (uint256)",
+  "function baseRewardPerHour() view returns (uint256)",
+  "function getStakingPower(uint256) view returns (uint256)"
+];
+var AMARKET=[
+  "function list(uint256,uint256)","function buy(uint256)","function cancel(uint256)",
+  "function getListing(uint256) view returns (address,uint256,uint256,bool)",
+  "function listingCount() view returns (uint256)"
+];
+var ADEX=[
+  "function swapUSDCToARCTIC(uint256,uint256)","function swapARCTICToUSDC(uint256,uint256)",
+  "function getOutputAmount(uint256,bool) view returns (uint256)",
+  "function getPoolInfo() view returns (uint256,uint256,uint256,uint256)",
+  "function addLiquidity(uint256,uint256) returns (uint256)",
+  "function removeLiquidity(uint256) returns (uint256,uint256)",
+  "function getRemoveAmount(uint256) view returns (uint256,uint256)",
+  "function lpBalances(address) view returns (uint256)",
+  "function totalLPSupply() view returns (uint256)"
+];
+
+// ===== ROUTING =====
+function navigateTo(page){
+  window.location.hash="#/"+page;
+}
+function getHashPage(){
+  var h=window.location.hash||"#/mint";
+  var p=h.replace("#/","").split("?")[0];
+  return ["mint","staking","market","swap","log"].indexOf(p)>=0?p:"mint";
+}
+function showPage(page){
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active")});
+  document.querySelectorAll(".nav a").forEach(function(a){a.classList.remove("active")});
+  var pg=document.getElementById("page-"+page);
+  if(pg)pg.classList.add("active");
+  var nav=document.getElementById("nav-"+page);
+  if(nav)nav.classList.add("active");
+}
+window.addEventListener("hashchange",function(){showPage(getHashPage())});
+window.addEventListener("load",function(){
+  setTimeout(function(){
+    document.getElementById("loading").classList.add("hidden");
     initContracts();
-    connectWalletIfAuto();
-  }, 400);
+    showPage(getHashPage());
+    connectIfAuto();
+  },300);
 });
 
-function initContracts() {
-  var p = getProvider();
-  contracts.arcticToken = new ethers.Contract(CONTRACTS.arcticToken, ABI_ERC20, p);
-  contracts.arcticBeasts = new ethers.Contract(CONTRACTS.arcticBeasts, ABI_BEASTS, p);
-  contracts.arcticStaking = new ethers.Contract(CONTRACTS.arcticStaking, ABI_STAKING, p);
-  contracts.arcticMarket = new ethers.Contract(CONTRACTS.arcticMarket, ABI_MARKET, p);
-  contracts.arcticDEX = new ethers.Contract(CONTRACTS.arcticDEX, ABI_DEX, p);
-  contracts.usdc = new ethers.Contract(CONTRACTS.usdc, ABI_ERC20, p);
+// ===== PROVIDER =====
+function getP(){if(!provider)provider=new ethers.JsonRpcProvider(RPC);return provider;}
+function initContracts(){
+  var p=getP();
+  contracts.token=new ethers.Contract(C.token,A20,p);
+  contracts.beasts=new ethers.Contract(C.beasts,ABEASTS,p);
+  contracts.staking=new ethers.Contract(C.staking,ASTAKE,p);
+  contracts.market=new ethers.Contract(C.market,AMARKET,p);
+  contracts.dex=new ethers.Contract(C.dex,ADEX,p);
+  contracts.usdc=new ethers.Contract(C.usdc,A20,p);
 }
 
-function getProvider() {
-  if (!provider) provider = new ethers.JsonRpcProvider(RPC_URL);
-  return provider;
-}
-
-function getEthereumProvider() {
-  if (window.ethereum) {
-    if (window.ethereum.providers && window.ethereum.providers.length > 0) {
-      for (var i = 0; i < window.ethereum.providers.length; i++) { if (window.ethereum.providers[i].isMetaMask) return window.ethereum.providers[i]; }
-      for (var j = 0; j < window.ethereum.providers.length; j++) { if (window.ethereum.providers[j].isOkxWallet) return window.ethereum.providers[j]; }
+// ===== WALLET =====
+function getEth(){
+  if(window.ethereum){
+    if(window.ethereum.providers&&window.ethereum.providers.length>0){
+      for(var i=0;i<window.ethereum.providers.length;i++)if(window.ethereum.providers[i].isMetaMask)return window.ethereum.providers[i];
       return window.ethereum.providers[0];
     }
     return window.ethereum;
   }
-  if (window.okxwallet) return window.okxwallet;
+  if(window.okxwallet)return window.okxwallet;
   return null;
 }
-
-async function switchToArcTestnet(eth) {
-  var hex = '0x' + CHAIN_ID.toString(16);
-  try {
-    await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hex }] });
-    return true;
-  } catch(se) {
-    if (se.code === 4902 || se.code === -32603) {
-      try {
-        await eth.request({ method: 'wallet_addEthereumChain', params: [{
-          chainId: hex, chainName: 'ARC Testnet', rpcUrls: [RPC_URL],
-          blockExplorerUrls: ['https://testnet.arcscan.app'],
-          nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 }
-        }] });
-        return true;
-      } catch(ae) { return false; }
+async function switchNet(){
+  var hex="0x"+CHAIN.toString(16);
+  try{await getEth().request({method:"wallet_switchEthereumChain",params:[{chainId:hex}]});return true;}
+  catch(e){
+    if(e.code===4902||e.code===-32603){
+      try{await getEth().request({method:"wallet_addEthereumChain",params:[{chainId:hex,chainName:"ARC Testnet",rpcUrls:[RPC],blockExplorerUrls:["https://testnet.arcscan.app"],nativeCurrency:{name:"ARC",symbol:"ARC",decimals:18}}]});return true;}
+      catch(e2){return false;}
     }
     return false;
   }
 }
-
-async function connectWallet() {
-  var eth = getEthereumProvider();
-  if (!eth) { showToast('No wallet detected!', 'error'); return; }
-  try {
-    var bp = new ethers.BrowserProvider(eth);
-    var accounts = await bp.send('eth_requestAccounts', []);
-    if (!accounts || !accounts.length) { showToast('No accounts.', 'error'); return; }
-    var ok = await switchToArcTestnet(eth);
-    signer = await bp.getSigner();
-    walletAddress = accounts[0];
-    document.getElementById('wallet-address').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
-    document.getElementById('btn-connect').style.display = 'none';
-    document.getElementById('btn-disconnect').style.display = 'inline-block';
-    contracts.arcticToken = contracts.arcticToken.connect(signer);
-    contracts.arcticBeasts = contracts.arcticBeasts.connect(signer);
-    contracts.arcticStaking = contracts.arcticStaking.connect(signer);
-    contracts.arcticMarket = contracts.arcticMarket.connect(signer);
-    contracts.arcticDEX = contracts.arcticDEX.connect(signer);
-    contracts.usdc = contracts.usdc.connect(signer);
-    document.getElementById('btn-mint').disabled = false;
-    document.getElementById('btn-list').disabled = false;
-    document.getElementById('btn-unlist').disabled = false;
-    document.getElementById('btn-swap').disabled = false;
-    if (ok) document.getElementById('network-badge').style.display = 'none';
-    else { document.getElementById('network-badge').style.display = 'inline'; document.getElementById('network-badge').textContent = 'Switch Network'; }
-    addTxLog('Connected: ' + walletAddress.slice(0,10) + '...', 'info');
-    loadAllData();
-  } catch(e) { addTxLog('Connect: ' + e.message, 'err'); }
+async function connectWallet(){
+  var eth=getEth();
+  if(!eth){toast("No wallet!","error");return;}
+  try{
+    var bp=new ethers.BrowserProvider(eth);
+    var ac=await bp.send("eth_requestAccounts",[]);
+    if(!ac||!ac.length){toast("No accounts.","error");return;}
+    var ok=await switchNet();
+    signer=await bp.getSigner();wallet=ac[0];
+    document.getElementById("addr").textContent=wallet.slice(0,6)+"..."+wallet.slice(-4);
+    document.getElementById("btn-conn").style.display="none";
+    document.getElementById("btn-disc").style.display="inline-block";
+    contracts.token=contracts.token.connect(signer);
+    contracts.beasts=contracts.beasts.connect(signer);
+    contracts.staking=contracts.staking.connect(signer);
+    contracts.market=contracts.market.connect(signer);
+    contracts.dex=contracts.dex.connect(signer);
+    contracts.usdc=contracts.usdc.connect(signer);
+    document.getElementById("btn-mint").disabled=false;
+    document.getElementById("btn-list").disabled=false;
+    document.getElementById("btn-unlist").disabled=false;
+    document.getElementById("btn-swap").disabled=false;
+    if(ok)document.getElementById("net-badge").style.display="none";
+    else{document.getElementById("net-badge").style.display="inline";document.getElementById("net-badge").textContent="Switch Network";}
+    txLog("Connected: "+wallet.slice(0,10)+"...","info");
+    loadAll();
+  }catch(e){txLog("Connect: "+e.message,"err");}
+}
+function disconnect(){
+  wallet="";signer=null;
+  document.getElementById("addr").textContent="";
+  document.getElementById("net-badge").style.display="none";
+  document.getElementById("btn-conn").style.display="inline-block";
+  document.getElementById("btn-disc").style.display="none";
+  ["btn-mint","btn-list","btn-unlist","btn-swap","btn-claim","btn-stake","btn-unstake"].forEach(function(id){document.getElementById(id).disabled=true;});
+  initContracts();txLog("Disconnected","info");
+}
+function connectIfAuto(){
+  var eth=getEth();if(!eth)return;
+  new ethers.BrowserProvider(eth).listAccounts().then(function(a){if(a.length>0)connectWallet();}).catch(function(){});
 }
 
-function disconnectWallet() {
-  walletAddress = ''; signer = null;
-  document.getElementById('wallet-address').textContent = '';
-  document.getElementById('network-badge').style.display = 'none';
-  document.getElementById('btn-connect').style.display = 'inline-block';
-  document.getElementById('btn-disconnect').style.display = 'none';
-  ['btn-mint','btn-list','btn-unlist','btn-swap','btn-claim','btn-stake','btn-unstake'].forEach(function(id){ document.getElementById(id).disabled = true; });
-  initContracts();
-  addTxLog('Disconnected', 'info');
+// ===== LOAD ALL =====
+async function loadAll(){
+  if(!wallet)return;
+  try{
+    await Promise.all([loadMint(),loadStake(),loadMarket(),loadSwap(),loadLP()]);
+  }catch(e){txLog("Load: "+e.message,"err");}
 }
 
-function connectWalletIfAuto() {
-  var eth = getEthereumProvider();
-  if (!eth) return;
-  new ethers.BrowserProvider(eth).listAccounts().then(function(a){ if(a.length>0) connectWallet(); }).catch(function(){});
-}
-
-// ===== TX TOAST =====
-function showTxToast(msg, type, link) {
-  var el = document.getElementById('tx-toast');
-  el.className = 'tx-toast ' + type;
-  el.innerHTML = msg;
-  if (link) el.innerHTML += ' <a href="' + link + '" target="_blank">View</a>';
-  el.style.display = 'block';
-  if (type !== 'pending') setTimeout(function(){ el.style.display = 'none'; }, 8000);
-}
-
-function clearTxToast() {
-  document.getElementById('tx-toast').style.display = 'none';
-}
-
-// ===== TX LOG =====
-function addTxLog(msg, type, txHash) {
-  var el = document.getElementById('tx-log');
-  if (!el) return;
-  var d = new Date();
-  var t = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ':' + d.getSeconds().toString().padStart(2,'0');
-  var div = document.createElement('div');
-  div.className = 'tx';
-  var statusHtml = type === 'ok' ? '<span class="tx-status ok">✓ SUCCESS</span>' :
-                   type === 'err' ? '<span class="tx-status fail">✗ FAIL</span>' :
-                   '<span class="tx-status pending">⏳ PENDING</span>';
-  var hashHtml = txHash ? ' <a href="https://testnet.arcscan.app/tx/' + txHash + '" target="_blank" style="color:var(--muted);font-size:.6rem">' + txHash.slice(0,10) + '...</a>' : '';
-  div.innerHTML = '<span style="color:var(--muted)">' + t + '</span> ' + statusHtml + ' ' + msg + hashHtml;
-  el.appendChild(div);
-  el.scrollTop = el.scrollHeight;
-}
-
-// ===== LOAD DATA =====
-async function loadAllData() {
-  if (!walletAddress) return;
-  try {
-    await Promise.all([
-      loadMintData(), loadStakeData(), loadMarketData(),
-      loadSwapData(), loadLPInfo(), loadStatsData()
-    ]);
-  } catch(e) { addTxLog('Load: ' + e.message, 'err'); }
-}
-
-async function loadMintData() {
-  try {
-    var supply = await contracts.arcticBeasts.totalSupply();
-    document.getElementById('mint-supply').textContent = supply.toString();
-    var bal = await contracts.arcticBeasts.balanceOf(walletAddress);
-    document.getElementById('mint-balance').textContent = bal.toString();
-    myWalletNFTs = [];
-    var list = document.getElementById('mint-nft-list');
-    list.innerHTML = '';
-    var n = Number(bal);
-    for (var i = 0; i < n; i++) {
-      try {
-        var tid = await contracts.arcticBeasts.tokenOfOwnerByIndex(walletAddress, i);
-        var r = Number(await contracts.arcticBeasts.tokenRarity(tid));
-        var p = await contracts.arcticBeasts.getStakingPower(tid);
-        myWalletNFTs.push({id: tid.toString(), rarity: r, power: p.toString()});
-        list.appendChild(makeCard(tid.toString(), r, p.toString(), 'mint'));
-      } catch(e) {}
+async function loadMint(){
+  try{
+    var supply=await contracts.beasts.totalSupply();
+    document.getElementById("m-supply").textContent=supply.toString();
+    var bal=await contracts.beasts.balanceOf(wallet);
+    var n=Number(bal);
+    // Count minted by this wallet (track via events or just show balance)
+    mintedCount=n; // simplified
+    document.getElementById("m-minted").textContent=n.toString();
+    var rem=Math.max(0,MAX_PER_WALLET-n);
+    document.getElementById("m-remaining").textContent=rem.toString();
+    document.getElementById("m-bar").style.width=(n/MAX_PER_WALLET*100)+"%";
+    document.getElementById("m-limit-text").textContent=n+" / "+MAX_PER_WALLET+" minted";
+    document.getElementById("btn-mint").disabled=n>=MAX_PER_WALLET;
+    
+    wNFTs=[];
+    var list=document.getElementById("m-list");
+    list.innerHTML="";
+    for(var i=0;i<n;i++){
+      try{
+        var tid=await contracts.beasts.tokenOfOwnerByIndex(wallet,i);
+        var r=Number(await contracts.beasts.tokenRarity(tid));
+        var p=await contracts.beasts.getStakingPower(tid);
+        wNFTs.push({id:tid.toString(),rarity:r,power:p.toString()});
+        list.appendChild(makeCard(tid.toString(),r,p.toString(),"mint"));
+      }catch(e){}
     }
-    if (n === 0) list.innerHTML = '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;text-align:center;padding:15px">No beasts yet. Mint some!</div>';
-  } catch(e) {}
+    if(n===0)list.innerHTML="<div style=\"color:var(--muted);font-size:.75rem;grid-column:1/-1;text-align:center;padding:15px\">No beasts yet.</div>";
+  }catch(e){}
 }
 
-async function loadStakeData() {
-  try {
-    // Wallet NFTs
-    var bal = await contracts.arcticBeasts.balanceOf(walletAddress);
-    var wList = document.getElementById('stake-wallet-list');
-    wList.innerHTML = '';
-    myWalletNFTs = [];
-    var n = Number(bal);
-    for (var i = 0; i < n; i++) {
-      try {
-        var tid = await contracts.arcticBeasts.tokenOfOwnerByIndex(walletAddress, i);
-        var r = Number(await contracts.arcticBeasts.tokenRarity(tid));
-        var p = await contracts.arcticBeasts.getStakingPower(tid);
-        myWalletNFTs.push({id: tid.toString(), rarity: r, power: p.toString()});
-        wList.appendChild(makeCard(tid.toString(), r, p.toString(), 'wallet'));
-      } catch(e) {}
+async function loadStake(){
+  try{
+    // Wallet beasts
+    var bal=await contracts.beasts.balanceOf(wallet);
+    var n=Number(bal);
+    var wl=document.getElementById("s-wallet");
+    wl.innerHTML="";wNFTs=[];
+    for(var i=0;i<n;i++){
+      try{
+        var tid=await contracts.beasts.tokenOfOwnerByIndex(wallet,i);
+        var r=Number(await contracts.beasts.tokenRarity(tid));
+        var p=await contracts.beasts.getStakingPower(tid);
+        wNFTs.push({id:tid.toString(),rarity:r,power:p.toString()});
+        wl.appendChild(makeCard(tid.toString(),r,p.toString(),"wallet"));
+      }catch(e){}
     }
-    if (n === 0) wList.innerHTML = '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;text-align:center;padding:15px">No beasts in wallet.</div>';
-
-    // Staked NFTs
-    var sList = document.getElementById('stake-staked-list');
-    sList.innerHTML = '';
-    myStakedNFTs = [];
-    var totalPower = 0;
-    try {
-      var staked = await contracts.arcticStaking.getStakedTokens(walletAddress);
-      for (var j = 0; j < staked.length; j++) {
-        try {
-          var sid = staked[j].toString();
-          var sr = Number(await contracts.arcticBeasts.tokenRarity(sid));
-          var sp = await contracts.arcticStaking.getStakingPower(sid);
-          myStakedNFTs.push({id: sid, rarity: sr, power: sp.toString()});
-          totalPower += Number(sp);
-          sList.appendChild(makeCard(sid, sr, sp.toString(), 'staked'));
-        } catch(e) {}
+    if(n===0)wl.innerHTML="<div style=\"color:var(--muted);font-size:.75rem;grid-column:1/-1;text-align:center;padding:10px\">No beasts.</div>";
+    
+    // Staked
+    var sl=document.getElementById("s-staked");
+    sl.innerHTML="";sNFTs=[];
+    var tp=0;
+    try{
+      var st=await contracts.staking.getStakedTokens(wallet);
+      for(var j=0;j<st.length;j++){
+        try{
+          var sid=st[j].toString();
+          var sr=Number(await contracts.beasts.tokenRarity(sid));
+          var sp=await contracts.staking.getStakingPower(sid);
+          sNFTs.push({id:sid,rarity:sr,power:sp.toString()});
+          tp+=Number(sp);
+          sl.appendChild(makeCard(sid,sr,sp.toString(),"staked"));
+        }catch(e){}
       }
-    } catch(e) {}
-    if (myStakedNFTs.length === 0) sList.innerHTML = '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;text-align:center;padding:15px">No staked beasts.</div>';
-
-    // Stats
-    document.getElementById('stake-power').textContent = totalPower.toString();
-    document.getElementById('stake-count').textContent = myStakedNFTs.length + ' / ' + n;
-
-    try {
-      var pending = await contracts.arcticStaking.pendingRewards(walletAddress);
-      document.getElementById('stake-pending').textContent = Number(ethers.formatEther(pending)).toFixed(4);
-    } catch(e) { document.getElementById('stake-pending').textContent = '0'; }
-
-    try {
-      var rate = await contracts.arcticStaking.baseRewardPerHour();
-      document.getElementById('stake-day').textContent = (Number(ethers.formatEther(rate)) * 24 * totalPower).toFixed(2);
-    } catch(e) { document.getElementById('stake-day').textContent = '0'; }
-
-    document.getElementById('btn-claim').disabled = myStakedNFTs.length === 0;
-  } catch(e) { addTxLog('Stake load: ' + e.message, 'err'); }
+    }catch(e){}
+    if(!sNFTs.length)sl.innerHTML="<div style=\"color:var(--muted);font-size:.75rem;grid-column:1/-1;text-align:center;padding:10px\">No staked beasts.</div>";
+    
+    document.getElementById("s-power").textContent=tp.toString();
+    document.getElementById("s-count").textContent=sNFTs.length+" / "+n;
+    try{var pr=await contracts.staking.pendingRewards(wallet);document.getElementById("s-pending").textContent=Number(ethers.formatEther(pr)).toFixed(4);}catch(e){document.getElementById("s-pending").textContent="0";}
+    try{var br=await contracts.staking.baseRewardPerHour();document.getElementById("s-day").textContent=(Number(ethers.formatEther(br))*24*tp).toFixed(2);}catch(e){document.getElementById("s-day").textContent="0";}
+    document.getElementById("btn-claim").disabled=!sNFTs.length;
+  }catch(e){}
 }
 
-async function loadMarketData() {
-  try {
-    var listingsEl = document.getElementById('market-listings');
-    listingsEl.innerHTML = '';
-    allMarketListings = [];
-    var floorPrice = Infinity;
-    var myCount = 0;
-
-    try {
-      var activeCount = Number(await contracts.arcticMarket.getActiveListingCount());
-      if (activeCount > 0) {
-        var res = await contracts.arcticMarket.getActiveListings(0, 100);
-        for (var i = 0; i < res[0].length; i++) {
-          try {
-            var lid = res[0][i];
-            var tid = res[2][i];
-            var price = res[3][i];
-            var seller = res[1][i];
-            if (seller === ethers.ZeroAddress) continue;
-            var pNum = Number(ethers.formatEther(price));
-            if (pNum < floorPrice) floorPrice = pNum;
-            var r = 1;
-            try { r = Number(await contracts.arcticBeasts.tokenRarity(tid)); } catch(e) {}
-            var isMine = seller.toLowerCase() === walletAddress.toLowerCase();
-            if (isMine) myCount++;
-            allMarketListings.push({lid: lid.toString(), tid: tid.toString(), price: pNum, seller: seller, rarity: r, isMine: isMine});
-          } catch(e) {}
-        }
+async function loadMarket(){
+  try{
+    var el=document.getElementById("mk-list");
+    el.innerHTML="";
+    allListings=[];
+    var floor=Infinity,myCount=0;
+    
+    try{
+      var lc=Number(await contracts.market.listingCount());
+      for(var i=0;i<lc;i++){
+        try{
+          var l=await contracts.market.getListing(i);
+          if(!l[3]||l[0]===ethers.ZeroAddress)continue;
+          var pn=Number(ethers.formatEther(l[2]));
+          if(pn<floor)floor=pn;
+          var r=1;try{r=Number(await contracts.beasts.tokenRarity(l[1]));}catch(e){}
+          var mine=l[0].toLowerCase()===wallet.toLowerCase();
+          if(mine)myCount++;
+          allListings.push({lid:i,tid:l[1].toString(),price:pn,seller:l[0],rarity:r,mine:mine});
+        }catch(e){}
       }
-    } catch(e) {
-      // fallback
-      try {
-        var lc = Number(await contracts.arcticMarket.listingCount());
-        for (var j = 0; j < lc; j++) {
-          try {
-            var listing = await contracts.arcticMarket.getListing(j);
-            if (!listing[3] || listing[0] === ethers.ZeroAddress) continue;
-            var pNum2 = Number(ethers.formatEther(listing[2]));
-            if (pNum2 < floorPrice) floorPrice = pNum2;
-            var r2 = 1;
-            try { r2 = Number(await contracts.arcticBeasts.tokenRarity(listing[1])); } catch(e) {}
-            var isMine2 = listing[0].toLowerCase() === walletAddress.toLowerCase();
-            if (isMine2) myCount++;
-            allMarketListings.push({lid: j.toString(), tid: listing[1].toString(), price: pNum2, seller: listing[0], rarity: r2, isMine: isMine2});
-          } catch(e) {}
-        }
-      } catch(e) {}
-    }
-
-    document.getElementById('market-total').textContent = allMarketListings.length.toString();
-    document.getElementById('market-floor').textContent = floorPrice === Infinity ? '—' : floorPrice.toFixed(2);
-    document.getElementById('market-mine').textContent = myCount.toString();
-
-    renderMarketListings();
+    }catch(e){}
+    
+    document.getElementById("mk-total").textContent=allListings.length.toString();
+    document.getElementById("mk-floor").textContent=floor===Infinity?"—":floor.toFixed(2);
+    document.getElementById("mk-mine").textContent=myCount.toString();
+    
+    renderMarket();
     renderMyListings();
-  } catch(e) { addTxLog('Market load: ' + e.message, 'err'); }
+    renderMarketWallet();
+  }catch(e){}
 }
 
-function renderMarketListings() {
-  var el = document.getElementById('market-listings');
-  el.innerHTML = '';
-  var filtered = allMarketListings.filter(function(item) {
-    if (marketFilter === 'all') return true;
-    if (marketFilter === 'mine') return item.isMine;
-    if (marketFilter === 'common') return item.rarity === 1;
-    if (marketFilter === 'rare') return item.rarity === 2;
-    if (marketFilter === 'epic') return item.rarity === 3;
-    if (marketFilter === 'legendary') return item.rarity === 4;
+function renderMarket(){
+  var el=document.getElementById("mk-list");
+  el.innerHTML="";
+  var filtered=allListings.filter(function(item){
+    if(mkFilter==="all")return true;
+    if(mkFilter==="mine")return item.mine;
+    if(mkFilter==="common")return item.rarity===1;
+    if(mkFilter==="rare")return item.rarity===2;
+    if(mkFilter==="epic")return item.rarity===3;
+    if(mkFilter==="legendary")return item.rarity===4;
     return true;
   });
-
-  if (filtered.length === 0) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:.8rem;grid-column:1/-1;text-align:center;padding:15px">No listings found.</div>';
-    return;
-  }
-
-  filtered.forEach(function(item) {
-    var div = document.createElement('div');
-    div.className = 'market-item';
-    var btnHtml = item.isMine ?
-      '<button class="btn btn-danger btn-sm" onclick="cancelListing(' + item.lid + ')" style="margin-top:6px">Cancel</button>' :
-      '<button class="btn btn-success btn-sm" onclick="buyListing(' + item.lid + ')" style="margin-top:6px">Buy</button>';
-    div.innerHTML = '<div style="font-size:2rem;margin:4px 0">' + RARITY_EMOJIS[item.rarity] + '</div>'
-      + '<span class="rarity-badge ' + RARITY_CLASSES[item.rarity] + '">' + RARITY_NAMES[item.rarity] + '</span>'
-      + '<div style="font-size:.7rem;color:var(--muted);margin:3px 0">Token #' + item.tid + '</div>'
-      + '<div style="font-size:.65rem;color:var(--muted)">' + item.seller.slice(0,6) + '...' + item.seller.slice(-4) + '</div>'
-      + '<div class="price">' + item.price.toFixed(2) + ' ARCTIC</div>'
-      + btnHtml;
-    el.appendChild(div);
+  if(!filtered.length){el.innerHTML="<div style=\"color:var(--muted);font-size:.75rem;grid-column:1/-1;text-align:center;padding:15px\">No listings.</div>";return;}
+  filtered.forEach(function(item){
+    var d=document.createElement("div");d.className="market-item";
+    var btn=item.mine?"<button class=\"btn btn-danger btn-sm\" onclick=\"cancelList("+item.lid+")\" style=\"margin-top:5px\">Cancel</button>":"<button class=\"btn btn-success btn-sm\" onclick=\"buyList("+item.lid+")\" style=\"margin-top:5px\">Buy</button>";
+    d.innerHTML="<div style=\"font-size:1.8rem;margin:3px 0\">"+RICON[item.rarity]+"</div>"
+      +"<span class=\"rarity-badge "+RCLASS[item.rarity]+"\">"+RNAME[item.rarity]+"</span>"
+      +"<div style=\"font-size:.65rem;color:var(--muted);margin:2px 0\">#"+item.tid+"</div>"
+      +"<div class=\"price\">"+item.price.toFixed(2)+" ARCTIC</div>"
+      +"<div style=\"font-size:.55rem;color:var(--muted)\">"+item.seller.slice(0,6)+"..."+item.seller.slice(-4)+"</div>"
+      +btn;
+    el.appendChild(d);
   });
 }
 
-function renderMyListings() {
-  var el = document.getElementById('my-listings');
-  var mine = allMarketListings.filter(function(i){ return i.isMine; });
-  if (mine.length === 0) { el.innerHTML = 'You have no active listings.'; return; }
-  el.innerHTML = 'Your listings: ' + mine.map(function(i){ return '#' + i.tid + ' (' + i.price.toFixed(1) + ' ARCTIC)'; }).join(', ');
+function renderMyListings(){
+  var el=document.getElementById("mk-mylistings");
+  var mine=allListings.filter(function(i){return i.mine;});
+  if(!mine.length){el.innerHTML="No active listings.";return;}
+  el.innerHTML="Your listings: "+mine.map(function(i){return "#"+i.tid+" ("+i.price.toFixed(1)+")";}).join(", ");
 }
 
-function setMarketFilter(f) {
-  marketFilter = f;
-  document.querySelectorAll('.filter-row .btn').forEach(function(b){ b.classList.remove('active-filter'); });
-  document.getElementById('filter-' + f).classList.add('active-filter');
-  renderMarketListings();
+function renderMarketWallet(){
+  var el=document.getElementById("mk-wallet");
+  el.innerHTML="";
+  if(!wNFTs.length){el.innerHTML="<div style=\"color:var(--muted);font-size:.7rem;grid-column:1/-1;text-align:center;padding:8px\">No beasts to list.</div>";return;}
+  wNFTs.forEach(function(n){
+    var d=makeCard(n.id,n.rarity,n.power,"market");
+    el.appendChild(d);
+  });
 }
 
-async function loadSwapData() {
-  try {
-    var pool = await contracts.arcticDEX.getPoolInfo();
-    var u = Number(ethers.formatUnits(pool[0], 6));
-    var a = Number(ethers.formatEther(pool[1]));
-    document.getElementById('dex-usdc-pool').textContent = u.toFixed(2);
-    document.getElementById('dex-arctic-pool').textContent = a.toFixed(0);
-    if (u > 0) document.getElementById('dex-price').textContent = (a/u).toFixed(2) + ' ARCTIC';
-  } catch(e) {}
+function setFilter(f){
+  mkFilter=f;
+  document.querySelectorAll(".filter-row .btn").forEach(function(b){b.classList.remove("active-filter");});
+  document.getElementById("f-"+f).classList.add("active-filter");
+  renderMarket();
 }
 
-async function loadLPInfo() {
-  if (!walletAddress) return;
-  try {
-    var lp = await contracts.arcticDEX.lpBalances(walletAddress);
-    var total = await contracts.arcticDEX.totalLPSupply();
-    var lpN = Number(ethers.formatEther(lp));
-    var tN = Number(ethers.formatEther(total));
-    document.getElementById('dex-lp-balance').textContent = lpN.toFixed(4) + ' LP';
-    document.getElementById('dex-total-lp').textContent = tN.toFixed(4);
-    document.getElementById('dex-lp-share').textContent = (tN > 0 && lpN > 0) ? (lpN/tN*100).toFixed(2) + '%' : '—';
-    var ub = await contracts.usdc.balanceOf(walletAddress);
-    var ab = await contracts.arcticToken.balanceOf(walletAddress);
-    document.getElementById('dex-my-usdc').textContent = Number(ethers.formatUnits(ub, 6)).toFixed(4);
-    document.getElementById('dex-my-arctic').textContent = Number(ethers.formatEther(ab)).toFixed(2);
-  } catch(e) {}
+async function loadSwap(){
+  try{
+    var pool=await contracts.dex.getPoolInfo();
+    var u=Number(ethers.formatUnits(pool[0],6));
+    var a=Number(ethers.formatEther(pool[1]));
+    document.getElementById("sw-usdc").textContent=u.toFixed(2);
+    document.getElementById("sw-arctic").textContent=a.toFixed(0);
+    if(u>0)document.getElementById("sw-price").textContent=(a/u).toFixed(2)+" ARCTIC";
+  }catch(e){}
 }
 
-async function loadStatsData() {
-  try {
-    var s = await contracts.arcticBeasts.totalSupply();
-    document.getElementById('stat-supply').textContent = s.toString();
-    var st = [];
-    try { st = await contracts.arcticStaking.getStakedTokens(walletAddress); } catch(e) {}
-    document.getElementById('stat-staked').textContent = st.length.toString();
-    var ub = await contracts.usdc.balanceOf(walletAddress);
-    document.getElementById('stat-usdc').textContent = Number(ethers.formatUnits(ub, 6)).toFixed(4);
-    var ab = await contracts.arcticToken.balanceOf(walletAddress);
-    document.getElementById('stat-arctic').textContent = Number(ethers.formatEther(ab)).toFixed(2);
-  } catch(e) {}
+async function loadLP(){
+  if(!wallet)return;
+  try{
+    var lp=await contracts.dex.lpBalances(wallet);
+    var total=await contracts.dex.totalLPSupply();
+    var lpN=Number(ethers.formatEther(lp));
+    var tN=Number(ethers.formatEther(total));
+    document.getElementById("sw-lp").textContent=lpN.toFixed(4)+" LP";
+    document.getElementById("lp-total").textContent=tN.toFixed(4);
+    document.getElementById("lp-share").textContent=(tN>0&&lpN>0)?(lpN/tN*100).toFixed(2)+"%":"—";
+    var ub=await contracts.usdc.balanceOf(wallet);
+    var ab=await contracts.token.balanceOf(wallet);
+    document.getElementById("lp-usdc").textContent=Number(ethers.formatUnits(ub,6)).toFixed(4);
+    document.getElementById("lp-arctic").textContent=Number(ethers.formatEther(ab)).toFixed(2);
+  }catch(e){}
 }
 
-// ===== NFT CARD (compact) =====
-function makeCard(tokenId, rarity, power, ctx) {
-  var d = document.createElement('div');
-  d.className = 'nft-card';
-  if (ctx === 'staked') d.classList.add('staked');
-  d.id = 'nft-' + ctx + '-' + tokenId;
-  d.innerHTML = '<div class="select-check">✓</div>'
-    + '<div class="nft-emoji">' + RARITY_EMOJIS[rarity] + '</div>'
-    + '<span class="rarity-badge ' + RARITY_CLASSES[rarity] + '">' + RARITY_NAMES[rarity] + '</span>'
-    + '<div class="nft-id">#' + tokenId + '</div>'
-    + '<div class="nft-power">⚡' + power + 'x</div>';
-  d.addEventListener('click', function(){ toggleSel(tokenId, ctx); });
+// ===== NFT CARD =====
+function makeCard(tokenId,rarity,power,ctx){
+  var d=document.createElement("div");
+  d.className="nft-card";
+  if(ctx==="staked")d.classList.add("staked");
+  d.id="nft-"+ctx+"-"+tokenId;
+  var name=creatureName(tokenId);
+  d.innerHTML="<div class=\"check\">✓</div>"
+    +"<div class=\"nft-icon\">"+RICON[rarity]+"</div>"
+    +"<div class=\"nft-name\">"+name+"</div>"
+    +"<span class=\"rarity-badge "+RCLASS[rarity]+"\">"+RNAME[rarity]+"</span>"
+    +"<div class=\"nft-id\">#"+tokenId+"</div>"
+    +"<div class=\"nft-power\">⚡"+power+"x</div>";
+  d.addEventListener("click",function(){toggleSel(tokenId,ctx);});
   return d;
 }
 
-function toggleSel(tokenId, ctx) {
-  var card = document.getElementById('nft-' + ctx + '-' + tokenId);
-  if (!card) return;
-  var arr = ctx === 'wallet' ? selectedWalletNFTs : selectedStakedNFTs;
-  var btnId = ctx === 'wallet' ? 'btn-stake' : 'btn-unstake';
-  var idx = arr.indexOf(tokenId);
-  if (idx >= 0) { arr.splice(idx, 1); card.classList.remove('selected'); }
-  else { arr.push(tokenId); card.classList.add('selected'); }
-  document.getElementById(btnId).disabled = arr.length === 0;
+function toggleSel(tokenId,ctx){
+  var card=document.getElementById("nft-"+ctx+"-"+tokenId);
+  if(!card)return;
+  var arr=ctx==="wallet"?selW:ctx==="staked"?selS:selW;
+  var btnId=ctx==="wallet"?"btn-stake":ctx==="staked"?"btn-unstake":"btn-list";
+  var idx=arr.indexOf(tokenId);
+  if(idx>=0){arr.splice(idx,1);card.classList.remove("selected");}
+  else{arr.push(tokenId);card.classList.add("selected");}
+  var btn=document.getElementById(btnId);
+  if(btn)btn.disabled=arr.length===0;
+}
+
+// ===== TX LOG =====
+function txLog(msg,type,hash){
+  var el=document.getElementById("log");
+  if(!el)return;
+  var d=document.createElement("div");d.className="tx";
+  var status=type==="ok"?"<span class=\"badge badge.ok\">✓</span>":type==="err"?"<span class=\"badge badge.fail\">✗</span>":"<span class=\"badge badge.pending\">⏳</span>";
+  var h=hash?" <a href=\"https://testnet.arcscan.app/tx/"+hash+"\" target=\"_blank\" style=\"color:var(--muted);font-size:.55rem\">"+hash.slice(0,8)+"</a>":"";
+  d.innerHTML=status+" "+msg+h;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+function toast(msg,type){
+  var t=document.createElement("div");t.className="toast "+type;t.textContent=msg;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},3000);
 }
 
 // ===== MINT =====
-async function mintNFTs() {
-  var qty = Math.min(10, Math.max(1, parseInt(document.getElementById('mint-qty').value) || 1));
-  addTxLog('Minting ' + qty + '...', 'pending');
-  showTxToast('⏳ Minting ' + qty + '...', 'pending');
-  try {
-    var gas = await contracts.arcticBeasts.mint.estimateGas(qty);
-    var tx = await contracts.arcticBeasts.mint(qty, { gasLimit: gas * 2n });
-    addTxLog('Mint TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Minting...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) {
-      addTxLog('Minted ' + qty + '!', 'ok', tx.hash);
-      showTxToast('✅ Minted ' + qty + '!', 'success');
-    } else {
-      addTxLog('Mint failed', 'err', tx.hash);
-      showTxToast('❌ Mint failed', 'fail');
-    }
-    loadAllData();
-  } catch(e) { addTxLog('Mint: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function mint(){
+  var qty=Math.min(10,Math.max(1,parseInt(document.getElementById("m-qty").value)||1));
+  if(mintedCount+qty>MAX_PER_WALLET){toast("Max "+MAX_PER_WALLET+" per wallet!","error");return;}
+  txLog("Minting "+qty+"...","pending");
+  try{
+    var gas=await contracts.beasts.mint.estimateGas(qty);
+    var tx=await contracts.beasts.mint(qty,{gasLimit:gas*2n});
+    txLog("Mint TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Minted "+qty+"!","ok",tx.hash);toast("Minted!","success");}
+    else{txLog("Mint failed","err",tx.hash);toast("Failed","error");}
+    loadAll();
+  }catch(e){txLog("Mint: "+e.message,"err");toast(e.message,"error");}
 }
 
 // ===== STAKE =====
-async function stakeSelected() {
-  if (!selectedWalletNFTs.length) return;
-  var ids = selectedWalletNFTs.map(function(id){ return BigInt(id); });
-  addTxLog('Staking ' + ids.length + '...', 'pending');
-  showTxToast('⏳ Staking...', 'pending');
-  try {
-    var ap = await contracts.arcticBeasts.isApprovedForAll(walletAddress, CONTRACTS.arcticStaking);
-    if (!ap) {
-      addTxLog('Approving...', 'pending');
-      var atx = await contracts.arcticBeasts.setApprovalForAll(CONTRACTS.arcticStaking, true);
-      await atx.wait();
-      addTxLog('Approved!', 'ok', atx.hash);
-    }
-    var gas = await contracts.arcticStaking.stake.estimateGas(ids);
-    var tx = await contracts.arcticStaking.stake(ids, { gasLimit: gas * 2n });
-    addTxLog('Stake TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Staking...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) {
-      addTxLog('Staked ' + ids.length + '!', 'ok', tx.hash);
-      showTxToast('✅ Staked!', 'success');
-    } else {
-      addTxLog('Stake failed', 'err', tx.hash);
-      showTxToast('❌ Stake failed', 'fail');
-    }
-    selectedWalletNFTs = [];
-    document.getElementById('btn-stake').disabled = true;
-    loadAllData();
-  } catch(e) { addTxLog('Stake: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function stakeSel(){
+  if(!selW.length)return;
+  var ids=selW.map(function(id){return BigInt(id);});
+  txLog("Staking "+ids.length+"...","pending");
+  try{
+    var ap=await contracts.beasts.isApprovedForAll(wallet,C.staking);
+    if(!ap){var atx=await contracts.beasts.setApprovalForAll(C.staking,true);await atx.wait();txLog("Approved","ok",atx.hash);}
+    var gas=await contracts.staking.stake.estimateGas(ids);
+    var tx=await contracts.staking.stake(ids,{gasLimit:gas*2n});
+    txLog("Stake TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Staked!","ok",tx.hash);toast("Staked!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    selW=[];document.getElementById("btn-stake").disabled=true;
+    loadAll();
+  }catch(e){txLog("Stake: "+e.message,"err");toast(e.message,"error");}
 }
 
-async function unstakeSelected() {
-  if (!selectedStakedNFTs.length) return;
-  var ids = selectedStakedNFTs.map(function(id){ return BigInt(id); });
-  addTxLog('Unstaking ' + ids.length + '...', 'pending');
-  showTxToast('⏳ Unstaking + Claim...', 'pending');
-  try {
-    var gas = await contracts.arcticStaking.unstake.estimateGas(ids);
-    var tx = await contracts.arcticStaking.unstake(ids, { gasLimit: gas * 2n });
-    addTxLog('Unstake TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Unstaking...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) {
-      addTxLog('Unstaked! Rewards claimed.', 'ok', tx.hash);
-      showTxToast('✅ Unstaked + Rewards!', 'success');
-    } else {
-      addTxLog('Unstake failed', 'err', tx.hash);
-      showTxToast('❌ Unstake failed', 'fail');
-    }
-    selectedStakedNFTs = [];
-    document.getElementById('btn-unstake').disabled = true;
-    loadAllData();
-  } catch(e) { addTxLog('Unstake: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function unstakeSel(){
+  if(!selS.length)return;
+  var ids=selS.map(function(id){return BigInt(id);});
+  txLog("Unstaking "+ids.length+"...","pending");
+  try{
+    var gas=await contracts.staking.unstake.estimateGas(ids);
+    var tx=await contracts.staking.unstake(ids,{gasLimit:gas*2n});
+    txLog("Unstake TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Unstaked + claimed!","ok",tx.hash);toast("Unstaked!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    selS=[];document.getElementById("btn-unstake").disabled=true;
+    loadAll();
+  }catch(e){txLog("Unstake: "+e.message,"err");toast(e.message,"error");}
 }
 
-async function claimRewards() {
-  addTxLog('Claiming...', 'pending');
-  showTxToast('⏳ Claiming...', 'pending');
-  try {
-    var tx = await contracts.arcticStaking.claim({ gasLimit: 300000 });
-    addTxLog('Claim TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Claiming...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) {
-      addTxLog('Rewards claimed!', 'ok', tx.hash);
-      showTxToast('✅ Rewards claimed!', 'success');
-    } else {
-      addTxLog('Claim failed', 'err', tx.hash);
-      showTxToast('❌ Claim failed', 'fail');
-    }
-    loadAllData();
-  } catch(e) { addTxLog('Claim: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function claim(){
+  txLog("Claiming...","pending");
+  try{
+    var tx=await contracts.staking.claim({gasLimit:300000});
+    txLog("Claim TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Claimed!","ok",tx.hash);toast("Claimed!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    loadAll();
+  }catch(e){txLog("Claim: "+e.message,"err");toast(e.message,"error");}
 }
 
 // ===== MARKET =====
-async function listNFT() {
-  var tid = parseInt(document.getElementById('list-token-id').value);
-  var price = document.getElementById('list-price').value;
-  if (!tid || !price) { showToast('Enter token ID and price', 'error'); return; }
-  addTxLog('Listing #' + tid + ' for ' + price + ' ARCTIC...', 'pending');
-  showTxToast('⏳ Listing...', 'pending');
-  try {
-    var pw = ethers.parseEther(price);
-    var ap = await contracts.arcticBeasts.isApprovedForAll(walletAddress, CONTRACTS.arcticMarket);
-    if (!ap) { var atx = await contracts.arcticBeasts.setApprovalForAll(CONTRACTS.arcticMarket, true); await atx.wait(); }
-    var tx = await contracts.arcticMarket.list(tid, pw, { gasLimit: 300000 });
-    addTxLog('List TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Listing...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) { addTxLog('Listed!', 'ok', tx.hash); showTxToast('✅ Listed!', 'success'); }
-    else { addTxLog('List failed', 'err', tx.hash); showTxToast('❌ List failed', 'fail'); }
-    loadAllData();
-  } catch(e) { addTxLog('List: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function listNFT(){
+  if(!selW.length){toast("Select a beast first","error");return;}
+  var price=document.getElementById("mk-price").value;
+  if(!price||parseFloat(price)<=0){toast("Enter price","error");return;}
+  var tokenId=selW[0]; // list first selected
+  txLog("Listing #"+tokenId+" for "+price+" ARCTIC...","pending");
+  try{
+    var pw=ethers.parseEther(price);
+    var ap=await contracts.beasts.isApprovedForAll(wallet,C.market);
+    if(!ap){var atx=await contracts.beasts.setApprovalForAll(C.market,true);await atx.wait();}
+    var tx=await contracts.market.list(tokenId,pw,{gasLimit:300000});
+    txLog("List TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Listed!","ok",tx.hash);toast("Listed!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    selW=[];document.getElementById("btn-list").disabled=true;document.getElementById("mk-price").value="";
+    loadAll();
+  }catch(e){txLog("List: "+e.message,"err");toast(e.message,"error");}
 }
 
-async function unlistNFT() {
-  var tid = parseInt(document.getElementById('list-token-id').value);
-  if (!tid) { showToast('Enter token ID', 'error'); return; }
-  // Find listing id for this token
-  var mine = allMarketListings.filter(function(i){ return i.tid === tid.toString(); });
-  if (!mine.length) { showToast('No listing found for #' + tid, 'error'); return; }
-  var lid = mine[0].lid;
-  addTxLog('Unlisting #' + lid + '...', 'pending');
-  showTxToast('⏳ Unlisting...', 'pending');
-  try {
-    var tx = await contracts.arcticMarket.cancel(lid, { gasLimit: 200000 });
-    addTxLog('Unlist TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Unlisting...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) { addTxLog('Unlisted!', 'ok', tx.hash); showTxToast('✅ Unlisted!', 'success'); }
-    else { addTxLog('Unlist failed', 'err', tx.hash); showTxToast('❌ Unlist failed', 'fail'); }
-    loadAllData();
-  } catch(e) { addTxLog('Unlist: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function unlistNFT(){
+  if(!selW.length){toast("Select your listing first","error");return;}
+  var tokenId=selW[0];
+  // Find listing for this token
+  var item=allListings.filter(function(i){return i.tid===tokenId&&i.mine;});
+  if(!item.length){toast("No listing found","error");return;}
+  txLog("Unlisting #"+item[0].lid+"...","pending");
+  try{
+    var tx=await contracts.market.cancel(item[0].lid,{gasLimit:200000});
+    txLog("Unlist TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Unlisted!","ok",tx.hash);toast("Unlisted!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    selW=[];document.getElementById("btn-unlist").disabled=true;
+    loadAll();
+  }catch(e){txLog("Unlist: "+e.message,"err");toast(e.message,"error");}
 }
 
-async function buyListing(lid) {
-  var item = allMarketListings.find(function(i){ return i.lid === lid.toString(); });
-  if (!item) return;
-  addTxLog('Buying #' + item.tid + ' for ' + item.price + ' ARCTIC...', 'pending');
-  showTxToast('⏳ Buying...', 'pending');
-  try {
-    var allow = await contracts.arcticToken.allowance(walletAddress, CONTRACTS.arcticMarket);
-    if (allow < ethers.parseEther(item.price.toString())) {
-      var atx = await contracts.arcticToken.approve(CONTRACTS.arcticMarket, ethers.MaxUint256);
-      await atx.wait();
-    }
-    var tx = await contracts.arcticMarket.buy(lid, { gasLimit: 300000 });
-    addTxLog('Buy TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Buying...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) { addTxLog('Bought!', 'ok', tx.hash); showTxToast('✅ Bought!', 'success'); }
-    else { addTxLog('Buy failed', 'err', tx.hash); showTxToast('❌ Buy failed', 'fail'); }
-    loadAllData();
-  } catch(e) { addTxLog('Buy: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function buyList(lid){
+  var item=allListings.find(function(i){return i.lid===lid;});
+  if(!item)return;
+  txLog("Buying #"+item.tid+"...","pending");
+  try{
+    var allow=await contracts.token.allowance(wallet,C.market);
+    if(allow<ethers.parseEther(item.price.toString())){var atx=await contracts.token.approve(C.market,ethers.MaxUint256);await atx.wait();}
+    var tx=await contracts.market.buy(lid,{gasLimit:300000});
+    txLog("Buy TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Bought!","ok",tx.hash);toast("Bought!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    loadAll();
+  }catch(e){txLog("Buy: "+e.message,"err");toast(e.message,"error");}
 }
 
-async function cancelListing(lid) {
-  addTxLog('Cancelling listing #' + lid + '...', 'pending');
-  showTxToast('⏳ Cancelling...', 'pending');
-  try {
-    var tx = await contracts.arcticMarket.cancel(lid, { gasLimit: 200000 });
-    addTxLog('Cancel TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Cancelling...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) { addTxLog('Cancelled!', 'ok', tx.hash); showTxToast('✅ Cancelled!', 'success'); }
-    else { addTxLog('Cancel failed', 'err', tx.hash); showTxToast('❌ Cancel failed', 'fail'); }
-    loadAllData();
-  } catch(e) { addTxLog('Cancel: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function cancelList(lid){
+  txLog("Cancelling #"+lid+"...","pending");
+  try{
+    var tx=await contracts.market.cancel(lid,{gasLimit:200000});
+    txLog("Cancel TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Cancelled!","ok",tx.hash);toast("Cancelled!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    loadAll();
+  }catch(e){txLog("Cancel: "+e.message,"err");toast(e.message,"error");}
 }
 
 // ===== SWAP =====
-document.getElementById('swap-amount').addEventListener('input', updateSwapOut);
-document.getElementById('swap-from').addEventListener('change', function(){
-  document.getElementById('swap-to').value = this.value === 'usdc' ? 'arctic' : 'usdc';
-  updateSwapOut();
-});
-document.getElementById('slippage').addEventListener('change', updateSwapOut);
+document.getElementById("sw-amount").addEventListener("input",updateSwap);
+document.getElementById("sw-from").addEventListener("change",function(){document.getElementById("sw-to").value=this.value==="usdc"?"arctic":"usdc";updateSwap();});
+document.getElementById("sw-slip").addEventListener("change",updateSwap);
 
-function swapDirection() {
-  var f = document.getElementById('swap-from');
-  var t = document.getElementById('swap-to');
-  var tmp = f.value; f.value = t.value; t.value = tmp;
-  updateSwapOut();
+function swapDir(){
+  var f=document.getElementById("sw-from"),t=document.getElementById("sw-to");
+  var tmp=f.value;f.value=t.value;t.value=tmp;updateSwap();
 }
 
-async function updateSwapOut() {
-  var amt = parseFloat(document.getElementById('swap-amount').value);
-  if (!amt || amt <= 0) { document.getElementById('swap-output').value = ''; document.getElementById('swap-price-info').textContent = ''; document.getElementById('swap-min-received').textContent = ''; return; }
-  try {
-    var from = document.getElementById('swap-from').value;
-    var isU = from === 'usdc';
-    var sl = parseFloat(document.getElementById('slippage').value) / 100;
-    var wei = isU ? ethers.parseUnits(amt.toString(), 6) : ethers.parseEther(amt.toString());
-    var out = await contracts.arcticDEX.getOutputAmount(wei, isU);
-    if (out === 0n) { document.getElementById('swap-output').value = 'No liquidity'; return; }
-    var outN = isU ? Number(ethers.formatEther(out)) : Number(ethers.formatUnits(out, 6));
-    document.getElementById('swap-output').value = outN.toFixed(isU ? 4 : 6);
-    document.getElementById('swap-price-info').textContent = isU ? '1 USDC ≈ ' + (outN/amt).toFixed(4) + ' ARCTIC' : '1 ARCTIC ≈ ' + (outN/amt).toFixed(6) + ' USDC';
-    var min = outN * (1 - sl);
-    document.getElementById('swap-min-received').textContent = 'Min: ' + min.toFixed(isU ? 4 : 6) + ' (' + (sl*100).toFixed(1) + '%)';
-  } catch(e) { document.getElementById('swap-output').value = 'Error'; }
+async function updateSwap(){
+  var amt=parseFloat(document.getElementById("sw-amount").value);
+  if(!amt||amt<=0){document.getElementById("sw-out").value="";document.getElementById("sw-info").textContent="";document.getElementById("sw-min").textContent="";return;}
+  try{
+    var from=document.getElementById("sw-from").value;
+    var isU=from==="usdc";
+    var sl=parseFloat(document.getElementById("sw-slip").value)/100;
+    var wei=isU?ethers.parseUnits(amt.toString(),6):ethers.parseEther(amt.toString());
+    var out=await contracts.dex.getOutputAmount(wei,isU);
+    if(out===0n){document.getElementById("sw-out").value="No liquidity";return;}
+    var on=isU?Number(ethers.formatEther(out)):Number(ethers.formatUnits(out,6));
+    document.getElementById("sw-out").value=on.toFixed(isU?4:6);
+    document.getElementById("sw-info").textContent=isU?"1 USDC ≈ "+(on/amt).toFixed(4)+" ARCTIC":"1 ARCTIC ≈ "+(on/amt).toFixed(6)+" USDC";
+    document.getElementById("sw-min").textContent="Min: "+(on*(1-sl)).toFixed(isU?4:6);
+  }catch(e){document.getElementById("sw-out").value="Error";}
 }
 
-async function executeSwap() {
-  var amt = parseFloat(document.getElementById('swap-amount').value);
-  if (!amt || amt <= 0) return;
-  var from = document.getElementById('swap-from').value;
-  var sl = parseFloat(document.getElementById('slippage').value) / 100;
-  addTxLog('Swapping ' + amt + ' ' + from.toUpperCase() + '...', 'pending');
-  showTxToast('⏳ Swapping...', 'pending');
-  try {
-    var isU = from === 'usdc';
-    var wei = isU ? ethers.parseUnits(amt.toString(), 6) : ethers.parseEther(amt.toString());
-    var out = await contracts.arcticDEX.getOutputAmount(wei, isU);
-    if (out === 0n) { showTxToast('❌ No liquidity', 'fail'); return; }
-    var minOut = out * BigInt(Math.floor((1-sl)*10000)) / 10000n;
+async function execSwap(){
+  var amt=parseFloat(document.getElementById("sw-amount").value);
+  if(!amt||amt<=0)return;
+  var from=document.getElementById("sw-from").value;
+  var sl=parseFloat(document.getElementById("sw-slip").value)/100;
+  txLog("Swapping "+amt+" "+from.toUpperCase()+"...","pending");
+  try{
+    var isU=from==="usdc";
+    var wei=isU?ethers.parseUnits(amt.toString(),6):ethers.parseEther(amt.toString());
+    var out=await contracts.dex.getOutputAmount(wei,isU);
+    if(out===0n){toast("No liquidity","error");return;}
+    var minOut=out*BigInt(Math.floor((1-sl)*10000))/10000n;
     var tx;
-    if (isU) {
-      var allow = await contracts.usdc.allowance(walletAddress, CONTRACTS.arcticDEX);
-      if (allow < wei) { var atx = await contracts.usdc.approve(CONTRACTS.arcticDEX, ethers.MaxUint256); await atx.wait(); }
-      tx = await contracts.arcticDEX.swapUSDCToARCTIC(wei, minOut, { gasLimit: 300000 });
-    } else {
-      var allow2 = await contracts.arcticToken.allowance(walletAddress, CONTRACTS.arcticDEX);
-      if (allow2 < wei) { var atx2 = await contracts.arcticToken.approve(CONTRACTS.arcticDEX, ethers.MaxUint256); await atx2.wait(); }
-      tx = await contracts.arcticDEX.swapARCTICToUSDC(wei, minOut, { gasLimit: 300000 });
+    if(isU){
+      var a=await contracts.usdc.allowance(wallet,C.dex);
+      if(a<wei){var t=await contracts.usdc.approve(C.dex,ethers.MaxUint256);await t.wait();}
+      tx=await contracts.dex.swapUSDCToARCTIC(wei,minOut,{gasLimit:300000});
+    }else{
+      var a2=await contracts.token.allowance(wallet,C.dex);
+      if(a2<wei){var t2=await contracts.token.approve(C.dex,ethers.MaxUint256);await t2.wait();}
+      tx=await contracts.dex.swapARCTICToUSDC(wei,minOut,{gasLimit:300000});
     }
-    addTxLog('Swap TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Swapping...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) { addTxLog('Swap success!', 'ok', tx.hash); showTxToast('✅ Swapped!', 'success'); }
-    else { addTxLog('Swap failed', 'err', tx.hash); showTxToast('❌ Swap failed', 'fail'); }
-    document.getElementById('swap-amount').value = '';
-    document.getElementById('swap-output').value = '';
-    document.getElementById('swap-price-info').textContent = '';
-    document.getElementById('swap-min-received').textContent = '';
-    loadAllData();
-  } catch(e) { addTxLog('Swap: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+    txLog("Swap TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("Swapped!","ok",tx.hash);toast("Swapped!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    document.getElementById("sw-amount").value="";document.getElementById("sw-out").value="";
+    document.getElementById("sw-info").textContent="";document.getElementById("sw-min").textContent="";
+    loadAll();
+  }catch(e){txLog("Swap: "+e.message,"err");toast(e.message,"error");}
 }
 
 // ===== LP =====
-async function setLiqPct(pct) {
-  if (!walletAddress) return;
-  try {
-    var ub = await contracts.usdc.balanceOf(walletAddress);
-    var ab = await contracts.arcticToken.balanceOf(walletAddress);
-    document.getElementById('liq-usdc').value = (Number(ethers.formatUnits(ub,6)) * pct / 100).toFixed(4);
-    document.getElementById('liq-arctic').value = (Number(ethers.formatEther(ab)) * pct / 100).toFixed(2);
-  } catch(e) {}
+async function setLP(pct){
+  if(!wallet)return;
+  try{
+    var ub=await contracts.usdc.balanceOf(wallet);
+    var ab=await contracts.token.balanceOf(wallet);
+    document.getElementById("lp-u").value=(Number(ethers.formatUnits(ub,6))*pct/100).toFixed(4);
+    document.getElementById("lp-a").value=(Number(ethers.formatEther(ab))*pct/100).toFixed(2);
+  }catch(e){}
 }
 
-async function addLiquidity() {
-  var ua = parseFloat(document.getElementById('liq-usdc').value);
-  var aa = parseFloat(document.getElementById('liq-arctic').value);
-  if (!ua || !aa || ua <= 0 || aa <= 0) { showToast('Enter amounts', 'error'); return; }
-  addTxLog('Adding LP: ' + ua + ' USDC + ' + aa + ' ARCTIC...', 'pending');
-  showTxToast('⏳ Adding liquidity...', 'pending');
-  try {
-    var uw = ethers.parseUnits(ua.toString(), 6);
-    var aw = ethers.parseEther(aa.toString());
-    var a1 = await contracts.usdc.allowance(walletAddress, CONTRACTS.arcticDEX);
-    if (a1 < uw) { var t1 = await contracts.usdc.approve(CONTRACTS.arcticDEX, ethers.MaxUint256); await t1.wait(); }
-    var a2 = await contracts.arcticToken.allowance(walletAddress, CONTRACTS.arcticDEX);
-    if (a2 < aw) { var t2 = await contracts.arcticToken.approve(CONTRACTS.arcticDEX, ethers.MaxUint256); await t2.wait(); }
-    var tx = await contracts.arcticDEX.addLiquidity(uw, aw, { gasLimit: 500000 });
-    addTxLog('Add LP TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Adding...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) { addTxLog('LP added!', 'ok', tx.hash); showTxToast('✅ Liquidity added!', 'success'); }
-    else { addTxLog('Add LP failed', 'err', tx.hash); showTxToast('❌ Failed', 'fail'); }
-    document.getElementById('liq-usdc').value = '';
-    document.getElementById('liq-arctic').value = '';
-    loadAllData();
-  } catch(e) { addTxLog('Add LP: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
+async function addLP(){
+  var ua=parseFloat(document.getElementById("lp-u").value);
+  var aa=parseFloat(document.getElementById("lp-a").value);
+  if(!ua||!aa||ua<=0||aa<=0){toast("Enter amounts","error");return;}
+  txLog("Adding LP: "+ua+" USDC + "+aa+" ARCTIC...","pending");
+  try{
+    var uw=ethers.parseUnits(ua.toString(),6);
+    var aw=ethers.parseEther(aa.toString());
+    var a1=await contracts.usdc.allowance(wallet,C.dex);
+    if(a1<uw){var t=await contracts.usdc.approve(C.dex,ethers.MaxUint256);await t.wait();}
+    var a2=await contracts.token.allowance(wallet,C.dex);
+    if(a2<aw){var t2=await contracts.token.approve(C.dex,ethers.MaxUint256);await t2.wait();}
+    var tx=await contracts.dex.addLiquidity(uw,aw,{gasLimit:500000});
+    txLog("Add LP TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){txLog("LP added!","ok",tx.hash);toast("Liquidity added!","success");}
+    else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    document.getElementById("lp-u").value="";document.getElementById("lp-a").value="";
+    loadAll();
+  }catch(e){txLog("Add LP: "+e.message,"err");toast(e.message,"error");}
 }
 
-function setRemovePct(pct) {
-  if (!walletAddress) return;
-  contracts.arcticDEX.lpBalances(walletAddress).then(function(lp){
-    document.getElementById('liq-lp').value = (Number(ethers.formatEther(lp)) * pct / 100).toFixed(4);
-    updateLiqPreview();
+function setRP(pct){
+  if(!wallet)return;
+  contracts.dex.lpBalances(wallet).then(function(lp){
+    document.getElementById("lp-r").value=(Number(ethers.formatEther(lp))*pct/100).toFixed(4);
+    updateLPPreview();
   }).catch(function(){});
 }
 
-async function updateLiqPreview() {
-  var amt = parseFloat(document.getElementById('liq-lp').value);
-  if (!amt || amt <= 0) { document.getElementById('liq-preview').textContent = ''; return; }
-  try {
-    var prev = await contracts.arcticDEX.getRemoveAmount(ethers.parseEther(amt.toString()));
-    document.getElementById('liq-preview').textContent = 'Receive: ' + Number(ethers.formatUnits(prev[0],6)).toFixed(4) + ' USDC + ' + Number(ethers.formatEther(prev[1])).toFixed(2) + ' ARCTIC';
-  } catch(e) {}
+async function updateLPPreview(){
+  var amt=parseFloat(document.getElementById("lp-r").value);
+  if(!amt||amt<=0){document.getElementById("lp-preview").textContent="";return;}
+  try{
+    var prev=await contracts.dex.getRemoveAmount(ethers.parseEther(amt.toString()));
+    document.getElementById("lp-preview").textContent="Receive: "+Number(ethers.formatUnits(prev[0],6)).toFixed(4)+" USDC + "+Number(ethers.formatEther(prev[1])).toFixed(2)+" ARCTIC";
+  }catch(e){}
 }
-document.getElementById('liq-lp').addEventListener('input', updateLiqPreview);
+document.getElementById("lp-r").addEventListener("input",updateLPPreview);
 
-async function removeLiquidity() {
-  var amt = parseFloat(document.getElementById('liq-lp').value);
-  if (!amt || amt <= 0) { showToast('Enter LP amount', 'error'); return; }
-  addTxLog('Removing ' + amt + ' LP...', 'pending');
-  showTxToast('⏳ Removing...', 'pending');
-  try {
-    var prev = await contracts.arcticDEX.getRemoveAmount(ethers.parseEther(amt.toString()));
-    var tx = await contracts.arcticDEX.removeLiquidity(ethers.parseEther(amt.toString()), { gasLimit: 500000 });
-    addTxLog('Remove LP TX sent', 'pending', tx.hash);
-    showTxToast('⏳ Removing...', 'pending', 'https://testnet.arcscan.app/tx/' + tx.hash);
-    var r = await tx.wait();
-    if (r.status === 1) {
-      addTxLog('Removed! Got ' + Number(ethers.formatUnits(prev[0],6)).toFixed(4) + ' USDC + ' + Number(ethers.formatEther(prev[1])).toFixed(2) + ' ARCTIC', 'ok', tx.hash);
-      showTxToast('✅ Removed!', 'success');
-    } else { addTxLog('Remove failed', 'err', tx.hash); showTxToast('❌ Failed', 'fail'); }
-    document.getElementById('liq-lp').value = '';
-    document.getElementById('liq-preview').textContent = '';
-    loadAllData();
-  } catch(e) { addTxLog('Remove LP: ' + e.message, 'err'); showTxToast('❌ ' + e.message, 'fail'); }
-}
-
-// ===== UI =====
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
-  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
-  document.getElementById('tab-' + name).classList.add('active');
-  document.getElementById('panel-' + name).classList.add('active');
-  if (walletAddress) loadAllData();
-}
-
-function showToast(msg, type) {
-  var t = document.createElement('div');
-  t.className = 'toast ' + type;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(function(){ t.remove(); }, 3000);
+async function remLP(){
+  var amt=parseFloat(document.getElementById("lp-r").value);
+  if(!amt||amt<=0){toast("Enter LP amount","error");return;}
+  txLog("Removing "+amt+" LP...","pending");
+  try{
+    var prev=await contracts.dex.getRemoveAmount(ethers.parseEther(amt.toString()));
+    var tx=await contracts.dex.removeLiquidity(ethers.parseEther(amt.toString()),{gasLimit:500000});
+    txLog("Remove LP TX...","pending",tx.hash);
+    var r=await tx.wait();
+    if(r.status===1){
+      txLog("Removed! Got "+Number(ethers.formatUnits(prev[0],6)).toFixed(4)+" USDC + "+Number(ethers.formatEther(prev[1])).toFixed(2)+" ARCTIC","ok",tx.hash);
+      toast("Removed!","success");
+    }else{txLog("Failed","err",tx.hash);toast("Failed","error");}
+    document.getElementById("lp-r").value="";document.getElementById("lp-preview").textContent="";
+    loadAll();
+  }catch(e){txLog("Remove LP: "+e.message,"err");toast(e.message,"error");}
 }
 </script>
 </body>
