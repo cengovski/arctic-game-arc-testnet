@@ -533,6 +533,8 @@ async function transferNFT(){
 // ==================== STAKING ====================
 async function loadStaking(){
   if(!wallet)return;
+  stakingInProgress=false;
+  stakingApproved=false;
   try{
     var staked=await contracts.staking.getStakedTokens(wallet);
     sNFTs=staked.map(function(t){return t.toString();});
@@ -588,20 +590,29 @@ function toggleSSel(el,id){
   if(idx>=0)selS.splice(idx,1);else selS.push(id);
   document.getElementById("btn-unstake").disabled=selS.length===0;
 }
+var stakingApproved=false;
+var stakingInProgress=false;
 async function stakeSel(){
   if(!selW.length)return;
+  if(stakingInProgress)return;
+  stakingInProgress=true;
   try{
-    // Check/set approval for staking contract
-    var approved=await contracts.beasts.isApprovedForAll(wallet,C.staking);
-    if(!approved){
-      txLog("Setting staking approval...","pending");
-      try{
-        var apTx=await contracts.beasts.setApprovalForAll(C.staking,true);
-        await apTx.wait();
-        txLog("Staking approval set!","ok",apTx.hash);
-      }catch(e){
-        toast("Approval rejected!","error");
-        return;
+    // Check/set approval for staking contract (cached)
+    if(!stakingApproved){
+      var approved=await contracts.beasts.isApprovedForAll(wallet,C.staking);
+      if(!approved){
+        txLog("Setting staking approval...","pending");
+        try{
+          var apTx=await contracts.beasts.setApprovalForAll(C.staking,true);
+          await apTx.wait();
+          txLog("Staking approval set!","ok",apTx.hash);
+          stakingApproved=true;
+        }catch(e){
+          toast("Approval rejected!","error");
+          return;
+        }
+      }else{
+        stakingApproved=true;
       }
     }
     txLog("Staking "+selW.length+"...","pending");
