@@ -174,7 +174,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     </div>
   </div>
   <div class="card">
-    <h3>&#x1F4CB; All Listings</h3>
+    <h3>&#x1F4CB; All Listings <span style="font-size:.65rem;color:var(--muted)">(tap to buy or unlist yours)</span></h3>
     <div class="filter-row">
       <span style="font-size:.7rem;color:var(--muted)">Rarity:</span>
       <button class="btn btn-sm active-filter" onclick="setF('all')" id="f-all">All</button>
@@ -193,13 +193,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     <div id="mk-list" class="market-grid"></div>
   </div>
   <div class="card">
-    <h3>&#x1F4B0; List / Unlist Your Beast</h3>
-    <p style="color:var(--muted);font-size:.7rem;margin-bottom:8px">Select beasts from your wallet below, set price in ARCTIC (min 0.001), then list.</p>
+    <h3>&#x1F4B0; List New Beast</h3>
+    <p style="color:var(--muted);font-size:.7rem;margin-bottom:8px">Select unlisted beasts from your wallet, set price in ARCTIC (min 0.001), then list.</p>
     <div id="mk-wallet" class="nft-grid" style="margin-bottom:10px"></div>
     <div class="input-row">
       <input type="number" id="mk-price" placeholder="Price (ARCTIC)" step="0.001" min="0.001" style="width:120px">
       <button class="btn btn-primary" id="btn-list" onclick="listNFT()" disabled>List Selected</button>
-      <button class="btn btn-danger" id="btn-unlist" onclick="unlistNFT()" disabled>Unlist Selected</button>
     </div>
     <div id="mk-mylist" style="margin-top:8px;font-size:.7rem;color:var(--muted)"></div>
   </div>
@@ -697,12 +696,14 @@ function renderMarket(){
     var icon=RICON[l.rarity]||"❄️";
     var cls=RCLASS[l.rarity]||"";
     var isMine=l.seller.toLowerCase()===wallet.toLowerCase();
-    el.innerHTML+="<div class='market-item' onclick='buyNFT("+l.idx+")'>"+
+    var borderStyle=isMine?"border-color:var(--success);box-shadow:0 0 8px rgba(34,197,94,.3)":"";
+    var clickAction=isMine?"selectUnlist("+l.idx+")":"buyNFT("+l.idx+")";
+    el.innerHTML+="<div class='market-item' style='"+borderStyle+"' onclick='"+clickAction+"'>"+
       "<div style='font-size:1.5rem'>"+icon+"</div>"+
       "<div class='price'>"+parseFloat(l.price).toFixed(3)+" ARCTIC</div>"+
       "<div style='font-size:.65rem;color:var(--ice)'>#"+l.tokenId+" "+name+"</div>"+
       "<span class='rarity-badge "+cls+"' style='font-size:.45rem'>"+RARITY[l.rarity]+"</span>"+
-      "<div class='seller'>"+(isMine?"(You)":l.seller.slice(0,6)+"..."+l.seller.slice(-4))+"</div>"+
+      "<div class='seller'>"+(isMine?"&#x2705; YOUR LISTING":"&#x1F451; "+l.seller.slice(0,6)+"..."+l.seller.slice(-4))+"</div>"+
       "</div>";
   });
   if(!filtered.length)el.innerHTML="<div style='color:var(--muted);font-size:.8rem;padding:20px'>No listings found</div>";
@@ -811,6 +812,36 @@ async function unlistNFT(){
     }
     toast("Unlisted!","success");
     mkSel=[];
+    loadMarket();
+  }catch(e){
+    txLog("Unlist failed: "+e.message,"err");
+    toast("Unlist failed!","error");
+  }
+}
+var unlistIdx=null;
+function selectUnlist(idx){
+  var listing=allListings.find(function(l){return l.idx===idx;});
+  if(!listing)return;
+  unlistIdx=idx;
+  document.querySelectorAll(".market-item").forEach(function(el){el.style.outline="none";});
+  event.target.closest(".market-item").style.outline="3px solid var(--danger)";
+  var name=RNAME[listing.rarity]||"Unknown";
+  document.getElementById("mk-mylist").innerHTML=
+    "<span style='color:var(--warning)'>Selected for unlist: #"+listing.tokenId+" "+name+" ("+parseFloat(listing.price).toFixed(3)+" ARCTIC)</span> "+
+    "<button class='btn btn-danger btn-sm' onclick='doUnlist()'>&#x274C; Unlist #"+listing.tokenId+"</button>";
+}
+async function doUnlist(){
+  if(unlistIdx===null)return;
+  var listing=allListings.find(function(l){return l.idx===unlistIdx;});
+  if(!listing)return;
+  try{
+    txLog("Unlisting #"+listing.tokenId+"...","pending");
+    var tx=await contracts.market.cancel(listing.idx);
+    await tx.wait();
+    txLog("Unlisted #"+listing.tokenId+"!","ok",tx.hash);
+    toast("Unlisted!","success");
+    unlistIdx=null;
+    document.getElementById("mk-mylist").innerHTML="";
     loadMarket();
   }catch(e){
     txLog("Unlist failed: "+e.message,"err");
