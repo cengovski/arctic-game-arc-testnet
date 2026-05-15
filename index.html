@@ -88,6 +88,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .btn-refresh .countdown{color:var(--warning);font-weight:700}
 .title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .title-row .page-title{margin-bottom:0}
+.rarity-filter{display:flex;gap:3px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.rarity-filter .btn-sm{padding:3px 8px;font-size:.6rem}
+.rarity-filter .btn-sm.active-rarity{box-shadow:0 0 0 2px var(--ice);border-color:var(--ice)}
 </style>
 </head>
 <body>
@@ -161,11 +164,27 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
   </div>
   <div class="card">
     <h3>&#x1F392; Wallet Beasts <span style="font-size:.65rem;color:var(--muted)">(tap to select)</span></h3>
+    <div class="rarity-filter" id="sf-wallet">
+      <span style="font-size:.65rem;color:var(--muted)">Filter:</span>
+      <button class="btn btn-sm active-rarity" onclick="setSF('wallet','all',this)">All</button>
+      <button class="btn btn-sm" onclick="setSF('wallet','common',this)">Common</button>
+      <button class="btn btn-sm" onclick="setSF('wallet','rare',this)">Rare</button>
+      <button class="btn btn-sm" onclick="setSF('wallet','epic',this)">Epic</button>
+      <button class="btn btn-sm" onclick="setSF('wallet','legendary',this)">Legendary</button>
+    </div>
     <div id="s-wallet" class="nft-grid"></div>
     <div class="stake-actions"><button class="btn btn-success" id="btn-stake" onclick="stakeSel()" disabled>&#x2B07;&#xFE0F; Stake Selected</button></div>
   </div>
   <div class="card">
     <h3>&#x1F512; Staked <span style="font-size:.65rem;color:var(--muted)">(tap to select)</span></h3>
+    <div class="rarity-filter" id="sf-staked">
+      <span style="font-size:.65rem;color:var(--muted)">Filter:</span>
+      <button class="btn btn-sm active-rarity" onclick="setSF('staked','all',this)">All</button>
+      <button class="btn btn-sm" onclick="setSF('staked','common',this)">Common</button>
+      <button class="btn btn-sm" onclick="setSF('staked','rare',this)">Rare</button>
+      <button class="btn btn-sm" onclick="setSF('staked','epic',this)">Epic</button>
+      <button class="btn btn-sm" onclick="setSF('staked','legendary',this)">Legendary</button>
+    </div>
     <div id="s-staked" class="nft-grid"></div>
     <div class="stake-actions">
       <button class="btn btn-warning" id="btn-unstake" onclick="unstakeSel()" disabled>&#x2B06;&#xFE0F; Unstake (+ Claim)</button>
@@ -209,6 +228,14 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
   <div class="card">
     <h3>&#x1F4B0; List New Beast</h3>
     <p style="color:var(--muted);font-size:.7rem;margin-bottom:8px">Select unlisted beasts from your wallet, set price in ARCTIC (min 0.001), then list.</p>
+    <div class="rarity-filter" id="sf-listnew">
+      <span style="font-size:.65rem;color:var(--muted)">Filter:</span>
+      <button class="btn btn-sm active-rarity" onclick="setSF('listnew','all',this)">All</button>
+      <button class="btn btn-sm" onclick="setSF('listnew','common',this)">Common</button>
+      <button class="btn btn-sm" onclick="setSF('listnew','rare',this)">Rare</button>
+      <button class="btn btn-sm" onclick="setSF('listnew','epic',this)">Epic</button>
+      <button class="btn btn-sm" onclick="setSF('listnew','legendary',this)">Legendary</button>
+    </div>
     <div id="mk-wallet" class="nft-grid" style="margin-bottom:10px"></div>
     <div class="input-row">
       <input type="number" id="mk-price" placeholder="Price (ARCTIC)" step="0.001" min="0.001" style="width:120px">
@@ -305,6 +332,7 @@ var RICON=["","🐺","🦊","🐻‍❄️","🐆"];
 var provider,signer,contracts={},wallet="";
 var wNFTs=[],sNFTs=[],selW=[],selS=[],allListings=[];
 var mkFilter="all",mkSort="cheap";
+var sfWallet="all",sfStaked="all",sfListnew="all";
 
 // ==================== ABIs ====================
 var A20=["function balanceOf(address) view returns (uint256)","function approve(address,uint256) returns (bool)","function allowance(address,address) view returns (uint256)","function decimals() view returns (uint8)","function transfer(address,uint256) returns (bool)"];
@@ -380,7 +408,21 @@ function refreshSwap(){
   loadSwap();
 }
 
-// ==================== PROVIDER / CONTRACTS ====================
+// ==================== STAKING & LIST NEW RARITY FILTER ====================
+var RARITY_MAP={"common":1,"rare":2,"epic":3,"legendary":4};
+function setSF(target,rarity,btn){
+  // Update state
+  if(target==="wallet")sfWallet=rarity;
+  else if(target==="staked")sfStaked=rarity;
+  else if(target==="listnew")sfListnew=rarity;
+  // Update button styles
+  var container=btn.parentElement;
+  container.querySelectorAll(".btn-sm").forEach(function(b){b.classList.remove("active-rarity");});
+  btn.classList.add("active-rarity");
+  // Re-render
+  if(target==="wallet"||target==="staked")renderStaking();
+  else if(target==="listnew")renderMarketWallet();
+}
 function getP(){
   if(!provider)provider=new ethers.JsonRpcProvider(RPC);
   return provider;
@@ -660,21 +702,28 @@ async function loadStaking(){
   }
 }
 function renderStaking(){
-  // Wallet beasts (not staked)
+  // Wallet beasts (not staked) — filtered
   var wEl=document.getElementById("s-wallet");
   wEl.innerHTML="";
-  wNFTs.forEach(function(n){
-    var isStaked=sNFTs.find(function(s){return s.id===n.id;});
-    if(!isStaked){
-      wEl.innerHTML+=nftCard(n.id,n.rarity,false,"toggleWSel(this,"+n.id+")",RPOW[n.rarity]||0);
-    }
+  var wFiltered=wNFTs.filter(function(n){
+    if(sfWallet==="all")return true;
+    return n.rarity===RARITY_MAP[sfWallet];
   });
-  // Staked beasts
+  wFiltered.forEach(function(n){
+    wEl.innerHTML+=nftCard(n.id,n.rarity,false,"toggleWSel(this,"+n.id+")",n.power||RPOW[n.rarity]||0);
+  });
+  if(!wFiltered.length)wEl.innerHTML="<div style='color:var(--muted);font-size:.7rem;grid-column:1/-1;text-align:center;padding:10px'>No beasts match filter</div>";
+  // Staked beasts — filtered
   var sEl=document.getElementById("s-staked");
   sEl.innerHTML="";
-  sNFTs.forEach(function(n){
+  var sFiltered=sNFTs.filter(function(n){
+    if(sfStaked==="all")return true;
+    return n.rarity===RARITY_MAP[sfStaked];
+  });
+  sFiltered.forEach(function(n){
     sEl.innerHTML+=nftCard(n.id,n.rarity,true,"toggleSSel(this,"+n.id+")",n.power||0);
   });
+  if(!sFiltered.length)sEl.innerHTML="<div style='color:var(--muted);font-size:.7rem;grid-column:1/-1;text-align:center;padding:10px'>No staked beasts match filter</div>";
 }
 function toggleWSel(el,id){
   el.classList.toggle("selected");
@@ -832,25 +881,34 @@ function renderMarket(){
 function renderMarketWallet(){
   var el=document.getElementById("mk-wallet");
   el.innerHTML="";
-  wNFTs.forEach(function(n){
+  // Filter unlisted wallet NFTs by rarity
+  var unlisted=wNFTs.filter(function(n){
     var listed=allListings.find(function(l){return l.tokenId===n.id;});
-    if(!listed){
-      el.innerHTML+=nftCard(n.id,n.rarity,false,"toggleMkSel(this,"+n.id+")");
-    }
+    return !listed;
   });
-  // Show listed NFTs with price badge
-  allListings.forEach(function(l){
-    if(l.seller.toLowerCase()===wallet.toLowerCase()){
-      var rarity=l.rarity; // Use rarity from listing data
-      el.innerHTML+="<div class='nft-card' style='border-color:var(--success);opacity:0.7' data-id='"+l.tokenId+"'>"+
-        "<div class='nft-icon'>"+RICON[rarity]+"</div>"+
-        "<div class='nft-name'>"+RNAME[rarity]+"</div>"+
-        "<div class='nft-id'>#"+l.tokenId+"</div>"+
-        "<div style='color:var(--success);font-size:.6rem;font-weight:700'>"+parseFloat(l.price).toFixed(3)+" ARCTIC</div>"+
-        "<span class='rarity-badge "+RCLASS[rarity]+"' style='font-size:.45rem'>"+RARITY[rarity]+"</span>"+
-        "<div style='font-size:.5rem;color:var(--success)'>LISTED</div></div>";
-    }
+  if(sfListnew!=="all"){
+    unlisted=unlisted.filter(function(n){return n.rarity===RARITY_MAP[sfListnew];});
+  }
+  unlisted.forEach(function(n){
+    el.innerHTML+=nftCard(n.id,n.rarity,false,"toggleMkSel(this,"+n.id+")",n.power||RPOW[n.rarity]||0);
   });
+  // Show listed NFTs with price badge (also filtered)
+  var myListed=allListings.filter(function(l){
+    if(l.seller.toLowerCase()!==wallet.toLowerCase())return false;
+    if(sfListnew==="all")return true;
+    return l.rarity===RARITY_MAP[sfListnew];
+  });
+  myListed.forEach(function(l){
+    var rarity=l.rarity;
+    el.innerHTML+="<div class='nft-card' style='border-color:var(--success);opacity:0.7' data-id='"+l.tokenId+"'>"+
+      "<div class='nft-icon'>"+RICON[rarity]+"</div>"+
+      "<div class='nft-name'>"+RNAME[rarity]+"</div>"+
+      "<div class='nft-id'>#"+l.tokenId+"</div>"+
+      "<div style='color:var(--success);font-size:.6rem;font-weight:700'>"+parseFloat(l.price).toFixed(3)+" ARCTIC</div>"+
+      "<span class='rarity-badge "+RCLASS[rarity]+"' style='font-size:.45rem'>"+RARITY[rarity]+"</span>"+
+      "<div style='font-size:.5rem;color:var(--success)'>LISTED</div></div>";
+  });
+  if(!unlisted.length&&!myListed.length)el.innerHTML="<div style='color:var(--muted);font-size:.7rem;grid-column:1/-1;text-align:center;padding:10px'>No beasts match filter</div>";
 }
 var mkSel=[];
 function toggleMkSel(el,id){
