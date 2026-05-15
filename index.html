@@ -464,13 +464,21 @@ async function loadAll(){
     // Balance
     var bal=await contracts.beasts.balanceOf(wallet);
     document.getElementById("m-owned").textContent=bal.toString();
-    // Load wallet NFTs
+    // Load wallet NFTs (staked NFTs may still be counted by balanceOf
+    // if the tx is not yet confirmed, so we use try/catch per index)
     wNFTs=[];
     for(var i=0;i<bal;i++){
-      var tid=await contracts.beasts.tokenOfOwnerByIndex(wallet,i);
-      var rarity=await contracts.beasts.tokenRarity(tid);
-      wNFTs.push({id:tid.toString(),rarity:Number(rarity)});
+      try{
+        var tid=await contracts.beasts.tokenOfOwnerByIndex(wallet,i);
+        var rarity=await contracts.beasts.tokenRarity(tid);
+        wNFTs.push({id:tid.toString(),rarity:Number(rarity)});
+      }catch(e){
+        // NFT may have been staked/transferred but balanceOf not yet updated
+        // or index out of bounds — skip this index
+      }
     }
+    // Update actual count from what we successfully loaded
+    document.getElementById("m-owned").textContent=wNFTs.length;
     renderMintList();
     document.getElementById("loading").classList.add("hidden");
   }catch(e){
@@ -634,7 +642,8 @@ async function stakeSel(){
     txLog("Staked "+selW.length+" beasts!","ok",tx.hash);
     toast("Staked!","success");
     selW=[];selS=[];
-    loadStaking();loadAll();
+    await loadStaking();
+    loadAll();
   }catch(e){
     txLog("Stake failed: "+e.message,"err");
     toast("Stake failed!","error");
@@ -651,7 +660,8 @@ async function unstakeSel(){
     txLog("Unstaked + claimed!","ok",tx.hash);
     toast("Unstaked + Claimed!","success");
     selW=[];selS=[];
-    loadStaking();loadAll();
+    await loadStaking();
+    loadAll();
   }catch(e){
     txLog("Unstake failed: "+e.message,"err");
     toast("Unstake failed!","error");
@@ -665,7 +675,7 @@ async function claim(){
     await tx.wait();
     txLog("Claimed!","ok",tx.hash);
     toast("Claimed!","success");
-    loadStaking();
+    await loadStaking();
   }catch(e){
     txLog("Claim failed: "+e.message,"err");
     toast("Claim failed!","error");
