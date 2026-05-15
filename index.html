@@ -121,7 +121,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     <button class="btn btn-refresh" id="btn-ref-mint" onclick="refreshMint()" title="Refresh wallet NFTs">&#x1F504; Refresh</button>
   </div>
   <div class="card">
-    <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Free mint! Max 10 per transaction. No wallet limit.</p>
+    <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Mint costs <strong style="color:var(--ice)">5 USDC</strong> per beast. Max 10 per tx. Treasury: <span style="font-size:.65rem;color:var(--muted)">0xf7FBfD42...Af072</span></p>
     <div class="stat-grid">
       <div class="stat-box"><div class="value" id="m-supply">&mdash;</div><div class="label">Total Minted</div></div>
       <div class="stat-box"><div class="value">10,000</div><div class="label">Max Supply</div></div>
@@ -129,7 +129,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     </div>
     <div class="input-row">
       <input type="number" id="m-qty" value="1" min="1" max="10" style="width:70px">
-      <button class="btn btn-primary" id="btn-mint" onclick="mint()" disabled>Mint <span id="mint-cost">(50 ARCTIC)</span></button>
+      <button class="btn btn-primary" id="btn-mint" onclick="mint()" disabled>Mint <span id="mint-cost">(5 USDC)</span></button>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">
       <span class="rarity-badge rarity-common">Common 60%</span>
@@ -315,11 +315,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 var RPC="https://rpc.testnet.arc.network",CHAIN=5042002;
 var C={
   token:"0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf",
-  beasts:"0xa5B25363aB1beDD20e5b979495D4dF686a08dB43",
-  staking:"0xDA5028280f3396a2990fb5582434B0EE7030E84a",
-  market:"0xBBE1a3D3dd36d31C0b4277d107180851CB67dEfC",
+  beasts:"0x061b5E98581f904d81F1823bFF0c1e5DcC8Bc407",
+  staking:"0x5BD8cA7D187Df8F998aBb71cf2d97a78877dECFb",
+  market:"0x18db39a0205EE69DE1324fE7A7D9DDEa93F60375",
   dex:"0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4",
-  usdc:"0x3600000000000000000000000000000000000000"
+  usdc:"0x3600000000000000000000000000000000000000",
+  treasury:"0xf7FBfD42BA1C453eeB6C6ae6A11AdE08112Af072"
 };
 
 // ==================== NFT RARITY CONFIG ====================
@@ -526,7 +527,7 @@ function showMintFlip(tokenIds){
 // Update mint cost display
 document.getElementById("m-qty").addEventListener("input",function(){
   var q=parseInt(this.value)||1;
-  document.getElementById("mint-cost").textContent="("+(q*mintPrice)+" ARCTIC)";
+  document.getElementById("mint-cost").textContent="("+(q*mintPrice)+" USDC)";
 });
 function getP(){
   if(!provider)provider=new ethers.JsonRpcProvider(RPC);
@@ -713,29 +714,29 @@ function toggleMintSel(el,id){
   el.classList.toggle("selected");
 }
 var mintApproved=false;
-var mintPrice=50; // 50 ARCTIC per beast
+var mintPrice=5; // 5 USDC per beast
 async function mint(){
   var qty=parseInt(document.getElementById("m-qty").value)||1;
   if(qty<1)qty=1;
   if(qty>10)qty=10;
   var totalCost=mintPrice*qty;
   try{
-    // Check ARCTIC balance
-    var arcticBal=Number(ethers.formatEther(await contracts.token.balanceOf(wallet)));
-    if(arcticBal<totalCost){toast("Need "+totalCost+" ARCTIC (you have "+arcticBal.toFixed(2)+")","error");return;}
+    // Check USDC balance
+    var usdcBal=Number(ethers.formatUnits(await contracts.usdc.balanceOf(wallet),6));
+    if(usdcBal<totalCost){toast("Need "+totalCost+" USDC (you have "+usdcBal.toFixed(2)+")","error");return;}
     // Check/set approval (cached after first time)
     if(!mintApproved){
-      var allowance=await contracts.token.allowance(wallet,C.beasts);
-      var needed=ethers.parseEther(totalCost.toString());
+      var allowance=await contracts.usdc.allowance(wallet,C.beasts);
+      var needed=ethers.parseUnits(totalCost.toString(),6);
       if(allowance<needed){
-        txLog("Approving "+totalCost+" ARCTIC...","pending");
-        var apTx=await contracts.token.approve(C.beasts,ethers.MaxUint256);
+        txLog("Approving "+totalCost+" USDC...","pending");
+        var apTx=await contracts.usdc.approve(C.beasts,ethers.MaxUint256);
         await apTx.wait();
         txLog("Approved!","ok",apTx.hash);
       }
       mintApproved=true;
     }
-    txLog("Minting "+qty+" for "+totalCost+" ARCTIC...","pending");
+    txLog("Minting "+qty+" for "+totalCost+" USDC...","pending");
     var tx=await contracts.beasts.mint(qty);
     txLog("Mint tx sent","pending",tx.hash);
     var r=await tx.wait();
