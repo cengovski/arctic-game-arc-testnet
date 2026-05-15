@@ -127,6 +127,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
       <div class="stat-box"><div class="value" id="m-supply">&mdash;</div><div class="label">Total Minted</div></div>
       <div class="stat-box"><div class="value">10,000</div><div class="label">Max Supply</div></div>
       <div class="stat-box"><div class="value" id="m-owned">0</div><div class="label">You Own</div></div>
+      <div class="stat-box"><div class="value" id="m-arctic">0</div><div class="label">Your ARCTIC</div></div>
     </div>
     <div class="input-row">
       <input type="number" id="m-qty" value="1" min="1" max="10" style="width:70px">
@@ -147,6 +148,13 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
       <input type="number" id="m-tid" placeholder="Token ID" min="1" style="width:80px">
       <input type="text" id="m-to" placeholder="Recipient (0x...)" style="width:260px;font-size:.7rem">
       <button class="btn btn-warning" id="btn-transfer" onclick="transferNFT()" disabled>&#x1F4E4; Transfer</button>
+    </div>
+  <div class="card">
+    <h3>&#x1F525; Burn Excess ARCTIC</h3>
+    <p style="color:var(--muted);font-size:.7rem;margin-bottom:8px">Burn your ARCTIC tokens to reduce supply. This is irreversible.</p>
+    <div class="input-row">
+      <input type="number" id="burn-amt" placeholder="Amount to burn" step="1" min="1" style="width:120px">
+      <button class="btn btn-danger" id="btn-burn" onclick="burnARCTIC()" disabled>&#x1F525; Burn</button>
     </div>
   </div>
 </div>
@@ -315,9 +323,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 // ==================== CONFIG ====================
 var RPC="https://rpc.testnet.arc.network",CHAIN=5042002;
 var C={
-  token:"0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf",
+  token:"0x3A37B2A6Da471406CC4d20A7eB3D813171bC40BC",
   beasts:"0x061b5E98581f904d81F1823bFF0c1e5DcC8Bc407",
-  staking:"0x5BD8cA7D187Df8F998aBb71cf2d97a78877dECFb",
+  staking:"0xf7Cb3396C1F663f39078E07f38EC258B26535D80",
   market:"0x18db39a0205EE69DE1324fE7A7D9DDEa93F60375",
   dex:"0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4",
   usdc:"0x3600000000000000000000000000000000000000",
@@ -596,7 +604,7 @@ async function connect(){
     contracts.usdc=contracts.usdc.connect(signer);
     // Enable buttons
     // Enable buttons (null-safe)
-    ["btn-mint","btn-list","btn-swap","btn-transfer"].forEach(function(id){
+    ["btn-mint","btn-list","btn-swap","btn-transfer","btn-burn"].forEach(function(id){
       var el=document.getElementById(id);
       if(el)el.disabled=false;
     });
@@ -693,6 +701,11 @@ async function loadAll(){
       if(bal===0)break;
     }
     document.getElementById("m-owned").textContent=wNFTs.length;
+    // Load ARCTIC balance
+    try{
+      var arcticBal=await contracts.token.balanceOf(wallet);
+      document.getElementById("m-arctic").textContent=parseFloat(ethers.formatEther(arcticBal)).toFixed(2);
+    }catch(e){}
     renderMintList();
     document.getElementById("loading").classList.add("hidden");
   }catch(e){
@@ -781,6 +794,32 @@ async function transferNFT(){
   }catch(e){
     txLog("Transfer failed: "+e.message,"err");
     toast("Transfer failed!","error");
+  }
+}
+
+// ==================== BURN ====================
+var burnInProgress=false;
+async function burnARCTIC(){
+  var amt=parseFloat(document.getElementById("burn-amt").value)||0;
+  if(amt<=0){toast("Enter amount","error");return;}
+  if(burnInProgress)return;
+  burnInProgress=true;
+  try{
+    var amtWei=ethers.parseEther(amt.toString());
+    var bal=await contracts.token.balanceOf(wallet);
+    if(amtWei>bal){toast("Insufficient ARCTIC balance","error");burnInProgress=false;return;}
+    txLog("Burning "+amt+" ARCTIC...","pending");
+    var tx=await contracts.token.burn(amtWei);
+    await tx.wait();
+    txLog("Burned "+amt+" ARCTIC!","ok",tx.hash);
+    toast("Burned!","success");
+    document.getElementById("burn-amt").value="";
+    loadAll();
+  }catch(e){
+    txLog("Burn failed: "+e.message,"err");
+    toast("Burn failed!","error");
+  }finally{
+    burnInProgress=false;
   }
 }
 
