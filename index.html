@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arctic Game - Web3 Idle Farming</title>
+<link rel="icon" type="image/jpeg" href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAQDAwQDAwQEAwQFBAQFBgoHBgYGBg0JCggKDw0QEA8NDw4RExgUERIXEg4PFRwVFxkZGxsbEBQdHx0aHxgaGxr/2wBDAQQFBQYFBgwHBwwaEQ8RGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhr/wAARCAAiACIDASIAAhEBAxEB/8QAGwABAAIDAQEAAAAAAAAAAAAAAAIHAQYIAwX/xAApEAABBAICAQQABwEAAAAAAAACAAEDBAUGERIhBxMUMSMyM0FSYZGS/8QAGAEAAwEBAAAAAAAAAAAAAAAAAAMEBQb/xAAjEQABAwMDBQEAAAAAAAAAAAABAAIDBBFREkGBITFhkfBx/9oADAMBAAIRAxEAPwDi1ZZnf8qwrui9NsrruCw2T1QTl22K370lcxaOw0BxsJCcJE/Iif8ArGughgfNfTt3WdNO2G2rdUxPTsVePlQTQciJt3Bx5Em7C/n9nbyy8l0zk8Rk9x2HXKktPHVNMgGvLlDpzxFE9iIOHhkISfwP6Yiqb9UdJfR9kKrE0xVZxeWKR4HCLy/kI3ci7CKdPSOhaXjqAbY+CRBVtlcGHoSL5+K0pERQq5FdlaDTdLoY7d8c129ZklKq+OjvsYRnJC/f8bozv1jP/pUmvp4fYLuEuVLNUwl+GZS14px9yOOR247sD+OypglERNx+HHlTTxGUCx4z4V2Vde1alZo+n1qtna1fY3hv/NsmAHEfXmONh6u38gL+1W3qbjsBhMxWxmqu89avBwdg7vvlI7v9EPUfbIX+xUdi9Us7stWpDfkDmoUElex59+KSMOrmB/bOX2S02WWSxLJLPI8sshOZmZcubv8Abu7p9RPG9ulg5ttj2kU8EjHBzzxffPpRREWetBRREQhEREIRERCF/9k=">
 <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -621,9 +622,7 @@ function disconnect(){
   txLog("Disconnected","info");
 }
 function autoConnect(){
-  var eth=getEth();
-  if(!eth)return;
-  new ethers.BrowserProvider(eth).listAccounts().then(function(a){if(a.length>0)connect();}).catch(function(){});
+  // Disabled: user must explicitly click Connect
 }
 
 // ==================== HELPERS ====================
@@ -877,6 +876,11 @@ function toggleSSel(el,id){
 }
 var stakingApproved=false;
 var stakingInProgress=false;
+var claimInProgress=false;
+var swapInProgress=false;
+var lpInProgress=false;
+var listInProgress=false;
+var buyInProgress=false;
 async function stakeSel(){
   if(!selW.length)return;
   if(stakingInProgress)return;
@@ -922,6 +926,8 @@ async function stakeSel(){
 }
 async function unstakeSel(){
   if(!selS.length)return;
+  if(stakingInProgress)return;
+  stakingInProgress=true;
   try{
     txLog("Unstaking "+selS.length+"...","pending");
     var ids=selS.map(function(x){return ethers.toBigInt(x);});
@@ -931,16 +937,19 @@ async function unstakeSel(){
     txLog("Unstaked + claimed!","ok",tx.hash);
     toast("Unstaked + Claimed!","success");
     selW=[];selS=[];
-    // Sequential: first load staking data, then wallet NFTs, then render
     await loadStaking();
     await loadAll();
     renderStaking();
   }catch(e){
     txLog("Unstake failed: "+e.message,"err");
     toast("Unstake failed!","error");
+  }finally{
+    stakingInProgress=false;
   }
 }
 async function claim(){
+  if(claimInProgress)return;
+  claimInProgress=true;
   try{
     txLog("Claiming...","pending");
     var tx=await contracts.staking.claim();
@@ -952,6 +961,8 @@ async function claim(){
   }catch(e){
     txLog("Claim failed: "+e.message,"err");
     toast("Claim failed!","error");
+  }finally{
+    claimInProgress=false;
   }
 }
 
@@ -1005,7 +1016,7 @@ function renderMarket(){
     var cls=RCLASS[l.rarity]||"";
     var isMine=l.seller.toLowerCase()===wallet.toLowerCase();
     var borderStyle=isMine?"border-color:var(--success);box-shadow:0 0 8px rgba(34,197,94,.3)":"";
-    var clickAction=isMine?"selectUnlist("+l.idx+")":"buyNFT("+l.idx+")";
+    var clickAction=isMine?"selectUnlist("+l.idx+",event)":"buyNFT("+l.idx+")";
     el.innerHTML+="<div class='market-item' style='"+borderStyle+"' onclick='"+clickAction+"'>"+
       "<div style='font-size:1.5rem'>"+icon+"</div>"+
       "<div class='price'>"+parseFloat(l.price).toFixed(3)+" ARCTIC</div>"+
@@ -1038,7 +1049,7 @@ function renderMarketWallet(){
   });
   myListed.forEach(function(l){
     var rarity=l.rarity;
-    el.innerHTML+="<div class='nft-card' style='border-color:var(--success);opacity:0.7' data-id='"+l.tokenId+"'>"+
+    el.innerHTML+="<div class='nft-card' style='border-color:var(--success);opacity:0.7;cursor:pointer' data-id='"+l.tokenId+"' onclick='toggleUnlistSel(this,\""+l.tokenId+"\")'>"+
       "<div class='nft-icon'>"+RICON[rarity]+"</div>"+
       "<div class='nft-name'>"+RNAME[rarity]+"</div>"+
       "<div class='nft-id'>#"+l.tokenId+"</div>"+
@@ -1054,7 +1065,15 @@ function toggleMkSel(el,id){
   var idx=mkSel.indexOf(id);
   if(idx>=0)mkSel.splice(idx,1);else mkSel.push(id);
   document.getElementById("btn-list").disabled=mkSel.length===0;
-  document.getElementById("btn-unlist").disabled=mkSel.length===0;
+}
+
+var unlistSel=[];
+function toggleUnlistSel(el,id){
+  el.classList.toggle("selected");
+  var idx=unlistSel.indexOf(id);
+  if(idx>=0)unlistSel.splice(idx,1);else unlistSel.push(id);
+  var btn=document.getElementById("btn-unlist");
+  if(btn)btn.disabled=unlistSel.length===0;
 }
 function setF(f){
   mkFilter=f;
@@ -1070,9 +1089,11 @@ function setSort(s){
 }
 async function listNFT(){
   if(!mkSel.length)return;
+  if(listInProgress)return;
+  listInProgress=true;
   var priceInput=document.getElementById("mk-price").value;
   var price=parseFloat(priceInput);
-  if(isNaN(price)||price<0.001){toast("Min price: 0.001 ARCTIC","error");return;}
+  if(isNaN(price)||price<0.001){toast("Min price: 0.001 ARCTIC","error");listInProgress=false;return;}
   try{
     // Check if user owns the selected NFTs
     for(var i=0;i<mkSel.length;i++){
@@ -1113,6 +1134,8 @@ async function listNFT(){
   }catch(e){
     txLog("List failed: "+e.message,"err");
     toast("List failed!","error");
+  }finally{
+    listInProgress=false;
   }
 }
 async function unlistNFT(){
@@ -1136,12 +1159,14 @@ async function unlistNFT(){
   }
 }
 var unlistIdx=null;
-function selectUnlist(idx){
+function selectUnlist(idx, evt){
   var listing=allListings.find(function(l){return l.idx===idx;});
   if(!listing)return;
   unlistIdx=idx;
+  var target=evt?evt.target:event.target;
   document.querySelectorAll(".market-item").forEach(function(el){el.style.outline="none";});
-  event.target.closest(".market-item").style.outline="3px solid var(--danger)";
+  var item=target.closest(".market-item");
+  if(item)item.style.outline="3px solid var(--danger)";
   var name=RNAME[listing.rarity]||"Unknown";
   document.getElementById("mk-mylist").innerHTML=
     "<span style='color:var(--warning)'>Selected for unlist: #"+listing.tokenId+" "+name+" ("+parseFloat(listing.price).toFixed(3)+" ARCTIC)</span> "+
@@ -1166,11 +1191,12 @@ async function doUnlist(){
   }
 }
 async function buyNFT(idx){
+  if(buyInProgress)return;
+  buyInProgress=true;
   try{
     var listing=allListings.find(function(l){return l.idx===idx;});
     if(!listing)return;
-    if(listing.seller.toLowerCase()===wallet.toLowerCase()){toast("This is your listing!","error");return;}
-    // Need to approve ARCTIC spending
+    if(listing.seller.toLowerCase()===wallet.toLowerCase()){toast("This is your listing!","error");buyInProgress=false;return;}
     var priceWei=ethers.parseEther(listing.price);
     var allowance=await contracts.token.allowance(wallet,C.market);
     if(allowance<priceWei){
@@ -1188,6 +1214,8 @@ async function buyNFT(idx){
   }catch(e){
     txLog("Buy failed: "+e.message,"err");
     toast("Buy failed!","error");
+  }finally{
+    buyInProgress=false;
   }
 }
 
@@ -1257,21 +1285,21 @@ document.getElementById("sw-slip").addEventListener("change",calcOut);
 async function execSwap(){
   var amt=parseFloat(document.getElementById("sw-amt").value)||0;
   if(amt<=0){toast("Enter amount","error");return;}
-  var from=document.getElementById("sw-from").value;
-  var isUSDC=from==="usdc";
-  var slip=parseFloat(document.getElementById("sw-slip").value)/100;
+  if(swapInProgress)return;
+  swapInProgress=true;
   try{
-    // Balance check
+    var from=document.getElementById("sw-from").value;
+    var isUSDC=from==="usdc";
+    var slip=parseFloat(document.getElementById("sw-slip").value)/100;
     var bal=isUSDC?await contracts.usdc.balanceOf(wallet):await contracts.token.balanceOf(wallet);
     var balVal=Number(bal)/Math.pow(10,isUSDC?6:18);
-    if(balVal<amt){toast("Insufficient "+from.toUpperCase()+" balance (have "+balVal.toFixed(4)+")","error");return;}
+    if(balVal<amt){toast("Insufficient "+from.toUpperCase()+" balance (have "+balVal.toFixed(4)+")","error");swapInProgress=false;return;}
     var dec=isUSDC?6:18;
     var amtWei=toWei(amt,dec);
     var out=await contracts.dex.getOutputAmount(amtWei,isUSDC);
     var outDec=isUSDC?18:6;
     var outVal=Number(out)/Math.pow(10,outDec);
     var minOutWei=BigInt(Math.floor(Number(out)*(1-slip)));
-    // Approve input token
     var tokenC=isUSDC?contracts.usdc:contracts.token;
     var allowance=await tokenC.allowance(wallet,C.dex);
     if(allowance<amtWei){
@@ -1289,6 +1317,8 @@ async function execSwap(){
   }catch(e){
     txLog("Swap failed: "+e.message,"err");
     toast("Swap failed!","error");
+  }finally{
+    swapInProgress=false;
   }
 }
 
@@ -1364,6 +1394,8 @@ async function addLP(){
   var u=parseFloat(document.getElementById("lp-u").value)||0;
   var a=parseFloat(document.getElementById("lp-a").value)||0;
   if(u<=0||a<=0){toast("Enter both amounts","error");return;}
+  if(lpInProgress)return;
+  lpInProgress=true;
   try{
     var uWei=toWei(u,6);
     var aWei=toWei(a,18);
@@ -1389,11 +1421,15 @@ async function addLP(){
   }catch(e){
     txLog("Add LP failed: "+e.message,"err");
     toast("Add LP failed!","error");
+  }finally{
+    lpInProgress=false;
   }
 }
 async function remLP(){
   var lpInput=parseFloat(document.getElementById("lp-r").value)||0;
   if(lpInput<=0){toast("Enter LP amount","error");return;}
+  if(lpInProgress)return;
+  lpInProgress=true;
   try{
     // Read fresh LP balance as BigInt
     var lpBalWei=await contracts.dex.lpBalances(wallet);
@@ -1417,6 +1453,8 @@ async function remLP(){
   }catch(e){
     txLog("Remove LP failed: "+e.message,"err");
     toast("Remove LP failed!","error");
+  }finally{
+    lpInProgress=false;
   }
 }
 
