@@ -1027,16 +1027,38 @@ async function setLP(pct){
     document.getElementById("lp-a").value=arcticAmt.toFixed(4);
   }catch(e){}
 }
+// Auto-calc ARCTIC when USDC amount changes
+document.getElementById("lp-u").addEventListener("input",function(){
+  var u=parseFloat(this.value)||0;
+  if(u>0&&poolUSDC>0){
+    var ratio=poolARCTIC/poolUSDC;
+    var a=u*ratio;
+    document.getElementById("lp-a").value=a.toFixed(4);
+  }
+});
+// Auto-calc USDC when ARCTIC amount changes
+document.getElementById("lp-a").addEventListener("input",function(){
+  var a=parseFloat(this.value)||0;
+  if(a>0&&poolARCTIC>0){
+    var ratio=poolUSDC/poolARCTIC;
+    var u=a*ratio;
+    document.getElementById("lp-u").value=u.toFixed(4);
+  }
+});
 async function setRP(pct){
   if(!wallet)return;
-  var lp=myLP*pct/100;
-  document.getElementById("lp-r").value=lp.toFixed(4);
-  // Preview
-  if(totalLP>0&&lp>0){
-    var usdcOut=lp/totalLP*poolUSDC;
-    var arcticOut=lp/totalLP*poolARCTIC;
-    document.getElementById("lp-preview").textContent="You receive: ~"+usdcOut.toFixed(4)+" USDC + ~"+arcticOut.toFixed(4)+" ARCTIC";
-  }
+  // Always read fresh LP balance from contract
+  try{
+    var lpBal=parseFloat(ethers.formatEther(await contracts.dex.lpBalances(wallet)));
+    var lp=lpBal*pct/100;
+    document.getElementById("lp-r").value=lp.toFixed(4);
+    // Preview
+    if(totalLP>0&&lp>0){
+      var usdcOut=lp/totalLP*poolUSDC;
+      var arcticOut=lp/totalLP*poolARCTIC;
+      document.getElementById("lp-preview").textContent="You receive: ~"+usdcOut.toFixed(4)+" USDC + ~"+arcticOut.toFixed(4)+" ARCTIC";
+    }
+  }catch(e){}
 }
 document.getElementById("lp-r").addEventListener("input",function(){
   var lp=parseFloat(this.value)||0;
@@ -1079,7 +1101,15 @@ async function addLP(){
 }
 async function remLP(){
   var lp=parseFloat(document.getElementById("lp-r").value)||0;
-  if(lp<=0||lp>myLP){toast("Invalid LP amount","error");return;}
+  if(lp<=0){toast("Enter LP amount","error");return;}
+  // Read fresh LP balance from contract instead of cached myLP
+  var lpBal=0;
+  try{
+    lpBal=parseFloat(ethers.formatEther(await contracts.dex.lpBalances(wallet)));
+  }catch(e){
+    toast("Cannot read LP balance","error");return;
+  }
+  if(lp>lpBal){toast("Invalid LP amount (you have "+lpBal.toFixed(4)+")","error");return;}
   try{
     var lpWei=ethers.parseEther(lp.toFixed(6));
     txLog("Removing liquidity...","pending");
