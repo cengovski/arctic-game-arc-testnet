@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arctic Game - Web3 Idle Farming</title>
 <link rel="icon" type="image/jpeg" href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAQDAwQDAwQEAwQFBAQFBgoHBgYGBg0JCggKDw0QEA8NDw4RExgUERIXEg4PFRwVFxkZGxsbEBQdHx0aHxgaGxr/2wBDAQQFBQYFBgwHBwwaEQ8RGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhr/wAARCAAiACIDASIAAhEBAxEB/8QAGwABAAIDAQEAAAAAAAAAAAAAAAIHAQYIAwX/xAApEAABBAICAQQABwEAAAAAAAACAAEDBAUGERIhBxMUMSMyM0FSYZGS/8QAGAEAAwEBAAAAAAAAAAAAAAAAAAMEBQb/xAAjEQABAwMDBQEAAAAAAAAAAAABAAIDBBFREkGBITFhkfBx/9oADAMBAAIRAxEAPwDi1ZZnf8qwrui9NsrruCw2T1QTl22K370lcxaOw0BxsJCcJE/Iif8ArGughgfNfTt3WdNO2G2rdUxPTsVePlQTQciJt3Bx5Em7C/n9nbyy8l0zk8Rk9x2HXKktPHVNMgGvLlDpzxFE9iIOHhkISfwP6Yiqb9UdJfR9kKrE0xVZxeWKR4HCLy/kI3ci7CKdPSOhaXjqAbY+CRBVtlcGHoSL5+K0pERQq5FdlaDTdLoY7d8c129ZklKq+OjvsYRnJC/f8bozv1jP/pUmvp4fYLuEuVLNUwl+GZS14px9yOOR247sD+OypglERNx+HHlTTxGUCx4z4V2Vde1alZo+n1qtna1fY3hv/NsmAHEfXmONh6u38gL+1W3qbjsBhMxWxmqu89avBwdg7vvlI7v9EPUfbIX+xUdi9Us7stWpDfkDmoUElex59+KSMOrmB/bOX2S02WWSxLJLPI8sshOZmZcubv8Abu7p9RPG9ulg5ttj2kU8EjHBzzxffPpRREWetBRREQhEREIRERCF/9k=">
-<script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0e1a;--card:#111827;--border:#1e293b;--primary:#3b82f6;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--text:#e2e8f0;--muted:#64748b;--ice:#a5f3fc}
@@ -539,17 +539,26 @@ document.getElementById("m-qty").addEventListener("input",function(){
   document.getElementById("mint-cost").textContent="("+(q*mintPrice)+" USDC)";
 });
 function getP(){
+  if(typeof ethers === 'undefined') return null;
   if(!provider)provider=new ethers.JsonRpcProvider(RPC);
   return provider;
 }
 function initContracts(){
-  var p=getP();
-  contracts.token=new ethers.Contract(C.token,A20,p);
-  contracts.beasts=new ethers.Contract(C.beasts,AB,p);
-  contracts.staking=new ethers.Contract(C.staking,AS,p);
-  contracts.market=new ethers.Contract(C.market,AM,p);
-  contracts.dex=new ethers.Contract(C.dex,AD,p);
-  contracts.usdc=new ethers.Contract(C.usdc,A20,p);
+  if(typeof ethers === 'undefined'){
+    txLog('ERROR: ethers.js not loaded','err');
+    return;
+  }
+  try{
+    var p=getP();
+    contracts.token=new ethers.Contract(C.token,A20,p);
+    contracts.beasts=new ethers.Contract(C.beasts,AB,p);
+    contracts.staking=new ethers.Contract(C.staking,AS,p);
+    contracts.market=new ethers.Contract(C.market,AM,p);
+    contracts.dex=new ethers.Contract(C.dex,AD,p);
+    contracts.usdc=new ethers.Contract(C.usdc,A20,p);
+  }catch(e){
+    txLog('Init error: '+e.message,'err');
+  }
 }
 function getEth(){
   if(window.ethereum){
