@@ -363,7 +363,11 @@ function refreshMint(){
 function refreshStaking(){
   if(!wallet)return;
   cooldownBtn("btn-ref-stake",10);
-  loadStaking();
+  (async function(){
+    await loadStaking();
+    await loadAll();
+    renderStaking();
+  })();
 }
 function refreshMarket(){
   if(!wallet)return;
@@ -518,22 +522,29 @@ async function loadAll(){
     var supply=await contracts.beasts.totalSupply();
     document.getElementById("m-supply").textContent=supply.toString();
     // Balance
-    var bal=await contracts.beasts.balanceOf(wallet);
-    document.getElementById("m-owned").textContent=bal.toString();
-    // Load wallet NFTs (staked NFTs may still be counted by balanceOf
-    // if the tx is not yet confirmed, so we use try/catch per index)
+    var bal=Number(await contracts.beasts.balanceOf(wallet));
+    // Load wallet NFTs — retry if balanceOf doesn't match actual enumerable tokens
+    // (can happen right after stake/unstake when RPC node is slightly behind)
     wNFTs=[];
-    for(var i=0;i<bal;i++){
-      try{
-        var tid=await contracts.beasts.tokenOfOwnerByIndex(wallet,i);
-        var rarity=await contracts.beasts.tokenRarity(tid);
-        wNFTs.push({id:tid.toString(),rarity:Number(rarity)});
-      }catch(e){
-        // NFT may have been staked/transferred but balanceOf not yet updated
-        // or index out of bounds — skip this index
+    for(var attempt=0;attempt<3;attempt++){
+      wNFTs=[];
+      var success=true;
+      for(var i=0;i<bal;i++){
+        try{
+          var tid=await contracts.beasts.tokenOfOwnerByIndex(wallet,i);
+          var rarity=await contracts.beasts.tokenRarity(tid);
+          wNFTs.push({id:tid.toString(),rarity:Number(rarity)});
+        }catch(e){
+          // tokenOfOwnerByIndex reverted — balanceOf may be stale
+          success=false;
+          break;
+        }
       }
+      if(success)break; // all loaded successfully
+      // Retry: re-read balance in case RPC node caught up
+      bal=Number(await contracts.beasts.balanceOf(wallet));
+      if(bal===0)break;
     }
-    // Update actual count from what we successfully loaded
     document.getElementById("m-owned").textContent=wNFTs.length;
     renderMintList();
     document.getElementById("loading").classList.add("hidden");
@@ -684,6 +695,7 @@ async function stakeSel(){
           stakingApproved=true;
         }catch(e){
           toast("Approval rejected!","error");
+          stakingInProgress=false;
           return;
         }
       }else{
@@ -698,11 +710,15 @@ async function stakeSel(){
     txLog("Staked "+selW.length+" beasts!","ok",tx.hash);
     toast("Staked!","success");
     selW=[];selS=[];
+    // Sequential: first load staking data, then wallet NFTs, then render
     await loadStaking();
-    loadAll();
+    await loadAll();
+    renderStaking();
   }catch(e){
     txLog("Stake failed: "+e.message,"err");
     toast("Stake failed!","error");
+  }finally{
+    stakingInProgress=false;
   }
 }
 async function unstakeSel(){
@@ -716,8 +732,10 @@ async function unstakeSel(){
     txLog("Unstaked + claimed!","ok",tx.hash);
     toast("Unstaked + Claimed!","success");
     selW=[];selS=[];
+    // Sequential: first load staking data, then wallet NFTs, then render
     await loadStaking();
-    loadAll();
+    await loadAll();
+    renderStaking();
   }catch(e){
     txLog("Unstake failed: "+e.message,"err");
     toast("Unstake failed!","error");
