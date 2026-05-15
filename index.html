@@ -542,20 +542,24 @@ async function loadStaking(){
     var base=await contracts.staking.baseRewardPerHour();
     var totalPower=0;
     var stakedDetails=[];
+    // Parallel RPC calls for speed
+    var powerPromises=sNFTs.map(function(id){return contracts.staking.getStakingPower(id);});
+    var rarityPromises=sNFTs.map(function(id){return contracts.beasts.tokenRarity(id).catch(function(){return 1;});});
+    var powers=await Promise.all(powerPromises);
+    var rarities=await Promise.all(rarityPromises);
     for(var i=0;i<sNFTs.length;i++){
-      var pw=await contracts.staking.getStakingPower(sNFTs[i]);
-      totalPower+=Number(pw);
-      // Read rarity from NFT contract
-      var rarity=1;
-      try{rarity=Number(await contracts.beasts.tokenRarity(sNFTs[i]));}catch(e){}
-      stakedDetails.push({id:sNFTs[i].toString(),rarity:rarity});
+      totalPower+=Number(powers[i]);
+      stakedDetails.push({id:sNFTs[i].toString(),rarity:Number(rarities[i])});
     }
     sNFTs=stakedDetails;
     document.getElementById("s-power").textContent=totalPower;
-    document.getElementById("s-pending").textContent=ethers.formatEther(pending);
+    var pendingNum=Number(ethers.formatEther(pending));
+    document.getElementById("s-pending").textContent=pendingNum.toFixed(4);
     var day=Number(ethers.formatEther(base))*24*(totalPower/Math.max(sNFTs.length,1));
     document.getElementById("s-day").textContent=day.toFixed(2);
     document.getElementById("s-count").textContent=sNFTs.length+"/"+wNFTs.length;
+    // Enable claim button if pending > 0
+    document.getElementById("btn-claim").disabled=pendingNum<=0;
     renderStaking();
   }catch(e){
     txLog("Staking load: "+e.message,"err");
