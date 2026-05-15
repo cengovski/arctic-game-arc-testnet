@@ -82,7 +82,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .filter-row{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
 .filter-row .btn.active-filter{background:var(--primary);color:#fff}
 .sort-row{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
-.sort-row .btn.active-sort{background:var(--success);color:#fff}
+.btn-refresh{background:var(--border);color:var(--text);padding:4px 10px;font-size:.7rem;border-radius:6px;cursor:pointer;border:1px solid var(--border);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.btn-refresh:hover:not(:disabled){background:var(--primary);color:#fff}
+.btn-refresh:disabled{opacity:.4;cursor:not-allowed}
+.btn-refresh .countdown{color:var(--warning);font-weight:700}
+.title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.title-row .page-title{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -105,7 +110,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
 <!-- ==================== MINT PAGE ==================== -->
 <div id="page-mint" class="page active">
-  <div class="page-title">&#x1F3B2; Mint Arctic Beasts</div>
+  <div class="title-row">
+    <div class="page-title">&#x1F3B2; Mint Arctic Beasts</div>
+    <button class="btn btn-refresh" id="btn-ref-mint" onclick="refreshMint()" title="Refresh wallet NFTs">&#x1F504; Refresh</button>
+  </div>
   <div class="card">
     <p style="color:var(--muted);font-size:.8rem;margin-bottom:12px">Free mint! Max 10 per transaction. No wallet limit.</p>
     <div class="stat-grid">
@@ -138,7 +146,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
 <!-- ==================== STAKING PAGE ==================== -->
 <div id="page-staking" class="page">
-  <div class="page-title">&#x26CF;&#xFE0F; Staking</div>
+  <div class="title-row">
+    <div class="page-title">&#x26CF;&#xFE0F; Staking</div>
+    <button class="btn btn-refresh" id="btn-ref-stake" onclick="refreshStaking()" title="Refresh staking data">&#x1F504; Refresh</button>
+  </div>
   <div class="card">
     <p style="color:var(--muted);font-size:.8rem;margin-bottom:10px">Stake NFTs to earn ARCTIC. Unstake auto-claims rewards.</p>
     <div class="stat-grid">
@@ -165,7 +176,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
 <!-- ==================== MARKET PAGE ==================== -->
 <div id="page-market" class="page">
-  <div class="page-title">&#x1F3EA; Marketplace</div>
+  <div class="title-row">
+    <div class="page-title">&#x1F3EA; Marketplace</div>
+    <button class="btn btn-refresh" id="btn-ref-market" onclick="refreshMarket()" title="Refresh listings">&#x1F504; Refresh</button>
+  </div>
   <div class="card">
     <div class="stat-grid">
       <div class="stat-box"><div class="value" id="mk-total">0</div><div class="label">Active Listings</div></div>
@@ -206,7 +220,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
 <!-- ==================== SWAP PAGE ==================== -->
 <div id="page-swap" class="page">
-  <div class="page-title">&#x1F4B1; Swap &amp; Liquidity</div>
+  <div class="title-row">
+    <div class="page-title">&#x1F4B1; Swap &amp; Liquidity</div>
+    <button class="btn btn-refresh" id="btn-ref-swap" onclick="refreshSwap()" title="Refresh pool data">&#x1F504; Refresh</button>
+  </div>
   <div class="card">
     <h3>&#x1F4B1; Swap USDC &harr; ARCTIC</h3>
     <div class="stat-grid">
@@ -319,6 +336,45 @@ function showPage(page){
   if(page==="swap")loadSwap();
 }
 window.addEventListener("hashchange",function(){showPage(getHashPage())});
+
+// ==================== REFRESH COOLDOWN ====================
+var refreshCooldowns={};
+function cooldownBtn(btnId,secs){
+  var btn=document.getElementById(btnId);
+  if(!btn)return;
+  btn.disabled=true;
+  var remaining=secs;
+  var interval=setInterval(function(){
+    remaining--;
+    if(remaining<=0){
+      clearInterval(interval);
+      btn.disabled=false;
+      btn.innerHTML="&#x1F504; Refresh";
+    }else{
+      btn.innerHTML="&#x1F504; <span class='countdown'>"+remaining+"</span>";
+    }
+  },1000);
+}
+function refreshMint(){
+  if(!wallet)return;
+  cooldownBtn("btn-ref-mint",10);
+  loadAll();
+}
+function refreshStaking(){
+  if(!wallet)return;
+  cooldownBtn("btn-ref-stake",10);
+  loadStaking();
+}
+function refreshMarket(){
+  if(!wallet)return;
+  cooldownBtn("btn-ref-market",10);
+  loadMarket();
+}
+function refreshSwap(){
+  if(!wallet)return;
+  cooldownBtn("btn-ref-swap",10);
+  loadSwap();
+}
 
 // ==================== PROVIDER / CONTRACTS ====================
 function getP(){
