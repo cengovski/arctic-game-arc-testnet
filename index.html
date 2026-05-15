@@ -91,6 +91,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .rarity-filter{display:flex;gap:3px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
 .rarity-filter .btn-sm{padding:3px 8px;font-size:.6rem}
 .rarity-filter .btn-sm.active-rarity{box-shadow:0 0 0 2px var(--ice);border-color:var(--ice)}
+@keyframes flipIn{0%{opacity:0;transform:scale(0.3) rotateY(0deg)}100%{opacity:1;transform:scale(1) rotateY(0deg)}}
+@keyframes flipRotate{0%{transform:rotateY(0deg)}100%{transform:rotateY(180deg)}}
+@keyframes pulse{0%{opacity:0.7;transform:scale(1)}100%{opacity:1;transform:scale(1.05)}}
 </style>
 </head>
 <body>
@@ -126,7 +129,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
     </div>
     <div class="input-row">
       <input type="number" id="m-qty" value="1" min="1" max="10" style="width:70px">
-      <button class="btn btn-primary" id="btn-mint" onclick="mint()" disabled>Mint (Free)</button>
+      <button class="btn btn-primary" id="btn-mint" onclick="mint()" disabled>Mint <span id="mint-cost">(50 ARCTIC)</span></button>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">
       <span class="rarity-badge rarity-common">Common 60%</span>
@@ -312,7 +315,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 var RPC="https://rpc.testnet.arc.network",CHAIN=5042002;
 var C={
   token:"0xe0Bb97b4A6fF64f2873a377E5eFE01Ab393029Cf",
-  beasts:"0xbe655D9Dda083608B52dDdC158b6F28bdEbfc16E",
+  beasts:"0xa5B25363aB1beDD20e5b979495D4dF686a08dB43",
   staking:"0xDA5028280f3396a2990fb5582434B0EE7030E84a",
   market:"0xBBE1a3D3dd36d31C0b4277d107180851CB67dEfC",
   dex:"0x2f56CFE29373B6d7563c6F0fd28E4E620F94a8C4",
@@ -423,6 +426,108 @@ function setSF(target,rarity,btn){
   if(target==="wallet"||target==="staked")renderStaking();
   else if(target==="listnew")renderMarketWallet();
 }
+
+// ==================== MINT FLIP ANIMATION ====================
+var mintAudioCtx=null;
+function playPokemonMusic(){
+  try{
+    if(!mintAudioCtx)mintAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    var ctx=mintAudioCtx;
+    // Pokemon-style jingle notes (frequency, duration in seconds)
+    var notes=[
+      [523,0.15],[659,0.15],[784,0.15],[1047,0.3],
+      [784,0.15],[1047,0.4],
+      [880,0.15],[784,0.15],[659,0.3],
+      [523,0.15],[659,0.15],[784,0.4]
+    ];
+    var t=ctx.currentTime;
+    notes.forEach(function(n,i){
+      var osc=ctx.createOscillator();
+      var gain=ctx.createGain();
+      osc.type="square";
+      osc.frequency.value=n[0];
+      gain.gain.setValueAtTime(0.15,t+i*0.18);
+      gain.gain.exponentialRampToValueAtTime(0.01,t+i*0.18+n[1]);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t+i*0.18);
+      osc.stop(t+i*0.18+n[1]+0.05);
+    });
+  }catch(e){}
+}
+function showMintFlip(tokenIds){
+  if(!tokenIds||!tokenIds.length)return;
+  playPokemonMusic();
+  // Create overlay
+  var overlay=document.createElement("div");
+  overlay.id="mint-flip-overlay";
+  overlay.style.cssText="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;";
+  var title=document.createElement("div");
+  title.style.cssText="font-size:1.5rem;font-weight:700;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.5);animation:pulse 0.5s ease-in-out infinite alternate;";
+  title.textContent="✨ New Beasts! ✨";
+  overlay.appendChild(title);
+  var cardsRow=document.createElement("div");
+  cardsRow.style.cssText="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;";
+  tokenIds.forEach(function(tid,i){
+    // Get rarity from contract for this token
+    var card=document.createElement("div");
+    card.className="flip-card";
+    card.style.cssText="width:140px;height:180px;perspective:600px;animation:flipIn 0.6s ease-out "+(i*0.8)+"s both;";
+    var inner=document.createElement("div");
+    inner.className="flip-card-inner";
+    inner.style.cssText="width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:flipRotate 0.8s ease-out "+(i*0.8+0.3)+"s both;";
+    // Front (hidden/back of card)
+    var front=document.createElement("div");
+    front.style.cssText="position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:12px;background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #333;display:flex;align-items:center;justify-content:center;font-size:3rem;";
+    front.textContent="❄️";
+    // Back (shown after flip) — will be populated with actual data
+    var back=document.createElement("div");
+    back.id="flip-card-"+tid;
+    back.style.cssText="position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:12px;border:2px solid #ffd700;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;transform:rotateY(180deg);";
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
+    cardsRow.appendChild(card);
+    // Fetch rarity and populate
+    (function(id){
+      setTimeout(function(){
+        contracts.beasts.tokenRarity(id).then(function(r){
+          var rarity=Number(r);
+          var el=document.getElementById("flip-card-"+id);
+          if(!el)return;
+          var name=RARITY[rarity]||"Unknown";
+          var icon=RICON[rarity]||"❄️";
+          var pow=RPOW[rarity]||0;
+          var bg=["","#1a1a2e","#0a1628","#1a0a2e","#2e1a0a"][rarity]||"#1a1a2e";
+          el.style.background=bg;
+          el.innerHTML="<div style='font-size:2.5rem'>"+icon+"</div>"
+            +"<div style='font-size:.6rem;font-weight:700;color:#a5f3fc;margin:2px 0'>"+name+"</div>"
+            +"<div style='font-size:.55rem;color:#64748b'>#"+id+"</div>"
+            +"<div style='font-size:.55rem;color:#f59e0b'>⚡"+pow+"</div>"
+            +"<span class='rarity-badge "+RCLASS[rarity]+"' style='font-size:.45rem;margin-top:4px'>"+name+"</span>";
+        }).catch(function(){});
+      },i*800+1200);
+    })(tid);
+  });
+  overlay.appendChild(cardsRow);
+  // Close button
+  var closeBtn=document.createElement("button");
+  closeBtn.className="btn btn-primary";
+  closeBtn.textContent="Collect!";
+  closeBtn.style.cssText="margin-top:20px;padding:12px 32px;font-size:1rem;";
+  closeBtn.onclick=function(){overlay.remove();};
+  overlay.appendChild(closeBtn);
+  document.body.appendChild(overlay);
+  // Auto-close after all flips
+  setTimeout(function(){
+    if(overlay.parentNode)overlay.remove();
+  },tokenIds.length*800+4000);
+}
+// Update mint cost display
+document.getElementById("m-qty").addEventListener("input",function(){
+  var q=parseInt(this.value)||1;
+  document.getElementById("mint-cost").textContent="("+(q*mintPrice)+" ARCTIC)";
+});
 function getP(){
   if(!provider)provider=new ethers.JsonRpcProvider(RPC);
   return provider;
@@ -607,18 +712,50 @@ function renderMintList(){
 function toggleMintSel(el,id){
   el.classList.toggle("selected");
 }
+var mintApproved=false;
+var mintPrice=50; // 50 ARCTIC per beast
 async function mint(){
   var qty=parseInt(document.getElementById("m-qty").value)||1;
   if(qty<1)qty=1;
   if(qty>10)qty=10;
+  var totalCost=mintPrice*qty;
   try{
-    txLog("Minting "+qty+"...","pending");
+    // Check ARCTIC balance
+    var arcticBal=Number(ethers.formatEther(await contracts.token.balanceOf(wallet)));
+    if(arcticBal<totalCost){toast("Need "+totalCost+" ARCTIC (you have "+arcticBal.toFixed(2)+")","error");return;}
+    // Check/set approval (cached after first time)
+    if(!mintApproved){
+      var allowance=await contracts.token.allowance(wallet,C.beasts);
+      var needed=ethers.parseEther(totalCost.toString());
+      if(allowance<needed){
+        txLog("Approving "+totalCost+" ARCTIC...","pending");
+        var apTx=await contracts.token.approve(C.beasts,ethers.MaxUint256);
+        await apTx.wait();
+        txLog("Approved!","ok",apTx.hash);
+      }
+      mintApproved=true;
+    }
+    txLog("Minting "+qty+" for "+totalCost+" ARCTIC...","pending");
     var tx=await contracts.beasts.mint(qty);
     txLog("Mint tx sent","pending",tx.hash);
     var r=await tx.wait();
     txLog("Minted "+qty+" beasts!","ok",tx.hash);
-    toast("Minted "+qty+" beasts!","success");
-    loadAll();
+    // Get minted token IDs from events
+    var mintedIds=[];
+    if(r&&r.logs){
+      for(var i=0;i<r.logs.length;i++){
+        try{
+          var parsed=contracts.beasts.interface.parseLog(r.logs[i]);
+          if(parsed&&parsed.name==="BeastMinted"){
+            mintedIds.push(parsed.args.tokenId.toString());
+          }
+        }catch(e2){}
+      }
+    }
+    // Show flip animation
+    showMintFlip(mintedIds);
+    // Refresh data after animation
+    setTimeout(function(){loadAll();},mintedIds.length*800+2000);
   }catch(e){
     txLog("Mint failed: "+e.message,"err");
     toast("Mint failed!","error");
