@@ -1103,26 +1103,36 @@ document.getElementById("lp-a").addEventListener("input",function(){
 });
 async function setRP(pct){
   if(!wallet)return;
-  // Always read fresh LP balance from contract
   try{
-    var lpBal=parseFloat(ethers.formatEther(await contracts.dex.lpBalances(wallet)));
-    var lp=lpBal*pct/100;
-    document.getElementById("lp-r").value=lp.toFixed(4);
-    // Preview
-    if(totalLP>0&&lp>0){
-      var usdcOut=lp/totalLP*poolUSDC;
-      var arcticOut=lp/totalLP*poolARCTIC;
-      document.getElementById("lp-preview").textContent="You receive: ~"+usdcOut.toFixed(4)+" USDC + ~"+arcticOut.toFixed(4)+" ARCTIC";
+    // Read LP balance as BigInt (wei) for precision
+    var lpBalWei=await contracts.dex.lpBalances(wallet);
+    if(lpBalWei===0n){
+      document.getElementById("lp-r").value="0";
+      document.getElementById("lp-preview").textContent="No LP tokens";
+      return;
     }
+    // Calculate percentage in wei to avoid precision loss
+    var lpWei=lpBalWei*BigInt(pct)/100n;
+    // Format for display with full precision
+    var lpDisplay=ethers.formatEther(lpWei);
+    document.getElementById("lp-r").value=lpDisplay;
+    // Preview using contract's getRemoveAmount (wei-level accuracy)
+    var removePreview=await contracts.dex.getRemoveAmount(lpWei);
+    var usdcOut=ethers.formatUnits(removePreview[0],6);
+    var arcticOut=ethers.formatEther(removePreview[1]);
+    document.getElementById("lp-preview").textContent="You receive: ~"+parseFloat(usdcOut).toFixed(4)+" USDC + ~"+parseFloat(arcticOut).toFixed(2)+" ARCTIC";
   }catch(e){}
 }
-document.getElementById("lp-r").addEventListener("input",function(){
-  var lp=parseFloat(this.value)||0;
-  if(totalLP>0&&lp>0){
-    var usdcOut=lp/totalLP*poolUSDC;
-    var arcticOut=lp/totalLP*poolARCTIC;
-    document.getElementById("lp-preview").textContent="You receive: ~"+usdcOut.toFixed(4)+" USDC + ~"+arcticOut.toFixed(4)+" ARCTIC";
-  }
+document.getElementById("lp-r").addEventListener("input",async function(){
+  var lpInput=parseFloat(this.value)||0;
+  if(lpInput<=0){document.getElementById("lp-preview").textContent="";return;}
+  try{
+    var lpWei=ethers.parseEther(lpInput.toFixed(18));
+    var removePreview=await contracts.dex.getRemoveAmount(lpWei);
+    var usdcOut=ethers.formatUnits(removePreview[0],6);
+    var arcticOut=ethers.formatEther(removePreview[1]);
+    document.getElementById("lp-preview").textContent="You receive: ~"+parseFloat(usdcOut).toFixed(4)+" USDC + ~"+parseFloat(arcticOut).toFixed(2)+" ARCTIC";
+  }catch(e){}
 });
 async function addLP(){
   var u=parseFloat(document.getElementById("lp-u").value)||0;
@@ -1156,21 +1166,23 @@ async function addLP(){
   }
 }
 async function remLP(){
-  var lp=parseFloat(document.getElementById("lp-r").value)||0;
-  if(lp<=0){toast("Enter LP amount","error");return;}
-  // Read fresh LP balance from contract instead of cached myLP
-  var lpBal=0;
+  var lpInput=parseFloat(document.getElementById("lp-r").value)||0;
+  if(lpInput<=0){toast("Enter LP amount","error");return;}
   try{
-    lpBal=parseFloat(ethers.formatEther(await contracts.dex.lpBalances(wallet)));
-  }catch(e){
-    toast("Cannot read LP balance","error");return;
-  }
-  if(lp>lpBal){toast("Invalid LP amount (you have "+lpBal.toFixed(4)+")","error");return;}
-  try{
-    var lpWei=ethers.parseEther(lp.toFixed(6));
+    // Read fresh LP balance as BigInt
+    var lpBalWei=await contracts.dex.lpBalances(wallet);
+    if(lpBalWei===0n){toast("No LP tokens","error");return;}
+    // Convert input to wei for comparison
+    var lpWei=ethers.parseEther(lpInput.toFixed(18));
+    if(lpWei>lpBalWei){
+      var balDisplay=ethers.formatEther(lpBalWei);
+      toast("Invalid LP amount (you have "+parseFloat(balDisplay).toFixed(6)+")","error");
+      return;
+    }
+    if(lpWei===0n){toast("Amount too small","error");return;}
     txLog("Removing liquidity...","pending");
     var tx=await contracts.dex.removeLiquidity(lpWei);
-    var r=await tx.wait();
+    await tx.wait();
     txLog("Liquidity removed!","ok",tx.hash);
     toast("Liquidity removed!","success");
     document.getElementById("lp-r").value="";
