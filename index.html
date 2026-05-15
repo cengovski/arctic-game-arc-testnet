@@ -536,10 +536,17 @@ async function loadStaking(){
   stakingInProgress=false;
   stakingApproved=false;
   try{
-    var staked=await contracts.staking.getStakedTokens(wallet);
+    var staked;
+    try{
+      staked=await contracts.staking.getStakedTokens(wallet);
+    }catch(e){
+      staked=[];
+    }
     sNFTs=staked.map(function(t){return t.toString();});
-    var pending=await contracts.staking.pendingRewards(wallet);
-    var base=await contracts.staking.baseRewardPerHour();
+    var pending=0;
+    var base=0;
+    try{pending=await contracts.staking.pendingRewards(wallet);}catch(e){}
+    try{base=await contracts.staking.baseRewardPerHour();}catch(e){}
     var totalPower=0;
     var stakedDetails=[];
     // Parallel RPC calls for speed
@@ -898,20 +905,21 @@ async function loadSwap(){
   if(!wallet)return;
   try{
     var info=await contracts.dex.getPoolInfo();
-    poolUSDC=parseFloat(ethers.formatEther(info[0]));
+    // info[0]=usdcBal (6 decimals), info[1]=arcticBal (18 decimals), info[2]=k, info[3]=lpSupply
+    poolUSDC=parseFloat(ethers.formatUnits(info[0],6));
     poolARCTIC=parseFloat(ethers.formatEther(info[1]));
-    totalLP=parseFloat(ethers.formatEther(info[2]));
+    totalLP=parseFloat(ethers.formatEther(info[3]));
     myLP=parseFloat(ethers.formatEther(await contracts.dex.lpBalances(wallet)));
     document.getElementById("sw-usdc").textContent=poolUSDC.toFixed(2);
     document.getElementById("sw-arctic").textContent=poolARCTIC.toFixed(0);
     var price=poolUSDC>0?poolARCTIC/poolUSDC:0;
-    document.getElementById("sw-price").textContent=price.toFixed(2);
+    document.getElementById("sw-price").textContent=price.toFixed(4);
     document.getElementById("sw-lp").textContent=myLP.toFixed(4);
     document.getElementById("lp-total").textContent=totalLP.toFixed(4);
     document.getElementById("lp-share").textContent=totalLP>0?(myLP/totalLP*100).toFixed(1)+"%":"0%";
     document.getElementById("lp-usdc").textContent=totalLP>0?(myLP/totalLP*poolUSDC).toFixed(2):"0";
     document.getElementById("lp-arctic").textContent=totalLP>0?(myLP/totalLP*poolARCTIC).toFixed(0):"0";
-    var ratio=poolUSDC>0?(poolARCTIC/poolUSDC).toFixed(2):"—";
+    var ratio=poolUSDC>0?(poolARCTIC/poolUSDC).toFixed(4):"—";
     document.getElementById("lp-ratio").textContent="(1 USDC = "+ratio+" ARCTIC)";
   }catch(e){
     txLog("Swap load: "+e.message,"err");
@@ -996,7 +1004,7 @@ async function execSwap(){
 async function setLP(pct){
   if(!wallet||poolUSDC<=0)return;
   try{
-    var usdcBal=parseFloat(ethers.formatEther(await contracts.usdc.balanceOf(wallet)));
+    var usdcBal=parseFloat(ethers.formatUnits(await contracts.usdc.balanceOf(wallet),6));
     var arcticBal=parseFloat(ethers.formatEther(await contracts.token.balanceOf(wallet)));
     var ratio=poolUSDC>0?poolARCTIC/poolUSDC:1;
     var usdcAmt=usdcBal*pct/100;
@@ -1033,8 +1041,8 @@ async function addLP(){
   var a=parseFloat(document.getElementById("lp-a").value)||0;
   if(u<=0||a<=0){toast("Enter both amounts","error");return;}
   try{
-    var uWei=ethers.parseEther(u.toFixed(6));
-    var aWei=ethers.parseEther(a.toFixed(6));
+    var uWei=toWei(u,6);
+    var aWei=toWei(a,18);
     // Approve both
     var usdcAllow=await contracts.usdc.allowance(wallet,C.dex);
     if(usdcAllow<uWei){
